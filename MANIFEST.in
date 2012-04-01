@@ -1,0 +1,2 @@
+include bin/pythonect README.rst LICENSE AUTHORS
+exclude .gitignore

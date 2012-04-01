@@ -1,0 +1,2 @@
+# requirements.txt for Python's PIP (see: http://www.pip-installer.org/en/latest/requirements.html)
+ply>=3.4
