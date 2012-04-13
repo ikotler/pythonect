@@ -9,117 +9,116 @@ import logging
 
 
 try:
-	
-	import _preamble
-	
+
+    import _preamble
+
 except ImportError:
-	
-	sys.exc_clear()
-	
-	
+
+    sys.exc_clear()
+
+
 import pythonect
 
 
 # Pythonect Console
 
 class PythonectCompile(codeop.Compile):
-	
-	def __init__(self):
-		
-		codeop.Compile.__init__(self)
-		
-	def __call__(self, source, filename, symbol):
-		
-		return source
-		
-		
+
+    def __init__(self):
+
+        codeop.Compile.__init__(self)
+
+    def __call__(self, source, filename, symbol):
+
+        return source
+
+
 class PythonectCommandCompiler(codeop.CommandCompiler):
-	
-	def __init__(self):
-		
-		codeop.CommandCompiler.__init__(self)
-		
-		self.compiler = PythonectCompile()
-		
-		
+
+    def __init__(self):
+
+        codeop.CommandCompiler.__init__(self)
+
+        self.compiler = PythonectCompile()
+
+
 class PythonectInteractiveConsole(code.InteractiveConsole):
-	
-	def __init__(self, locals=None):
-		
-		code.InteractiveConsole.__init__(self, locals)
-		
-		self.compile = PythonectCommandCompiler()
-		
-	# This is a cut & paste from /usr/lib/python2.7/code.py
-	# Except we're not calling `exec` statement
-	
-	def runcode(self, code_):
-		
-		try:
-			
-			self.write(str(pythonect.eval(code_, self.locals, {})) + '\n')
-			
-			# TODO: discard value, need to think about a better way to handle `_` in-between runcodes()
-			
-			self.locals['_'] = None
-			
-		except SystemExit:
-			
-			raise
-			
-		except:
-			
-			self.showtraceback()
-			
-		else:
-			
-			if code.softspace(sys.stdout, 0):
-				
-				print
-				
+
+    def __init__(self, locals=None):
+
+        code.InteractiveConsole.__init__(self, locals)
+
+        self.compile = PythonectCommandCompiler()
+
+    # This is a cut & paste from /usr/lib/python2.7/code.py
+    # Except we're not calling `exec` statement
+
+    def runcode(self, code_):
+
+        try:
+
+            self.write(str(pythonect.eval(code_, self.locals, {})) + '\n')
+
+            # TODO: discard value, need to think about a better way to handle `_` in-between runcodes()
+
+            self.locals['_'] = None
+
+        except SystemExit:
+
+            raise
+
+        except:
+
+            self.showtraceback()
+
+        else:
+
+            if code.softspace(sys.stdout, 0):
+
+                print
+
 
 def main():
-	
-	verbose_levels = [ logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG ]
-	
-	# Pythonect's Banner
-	
-	banner = "Pythonect %s" % pythonect.__version__
-	
-	# Parse command-line arguments
-	
-	parser = argparse.ArgumentParser(sys.argv)
-	
-	parser.add_argument('script', metavar='file', nargs='?', type=argparse.FileType('rt'))
-	parser.add_argument('--verbose', '-v', action='count', default=0)	
-	parser.add_argument('--version', '-V', action='version', version=banner)
-	
-	args = parser.parse_args()
-	
-	# Setup logging level
-	
-	logging.basicConfig(level = verbose_levels[args.verbose % 4], format = "%(filename)10s:%(lineno)4d:%(message)s")
-	
-	# Script-mode (i.e. ./pythonect script or #!/usr/bin/env pythonect)
-	
-	if args.script:
-		
-		pythonect.eval(args.script.read(), {}, {})
-		
-		args.script.close()
-		
-	# Interactive-mode (i.e. ./pythonect)
-	
-	else:
-		
-		PythonectInteractiveConsole().interact(banner)
-		
-	return 0
-	
-	
+
+    verbose_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+
+    # Pythonect's Banner
+
+    banner = "Pythonect %s" % pythonect.__version__
+
+    # Parse command-line arguments
+
+    parser = argparse.ArgumentParser(sys.argv)
+
+    parser.add_argument('script', metavar='file', nargs='?', type=argparse.FileType('rt'))
+    parser.add_argument('--verbose', '-v', action='count', default=0)
+    parser.add_argument('--version', '-V', action='version', version=banner)
+
+    args = parser.parse_args()
+
+    # Setup logging level
+
+    logging.basicConfig(level=verbose_levels[args.verbose % 4], format="%(filename)10s:%(lineno)4d:%(message)s")
+
+    # Script-mode (i.e. ./pythonect script or #!/usr/bin/env pythonect)
+
+    if args.script:
+
+        pythonect.eval(args.script.read(), {}, {})
+
+        args.script.close()
+
+    # Interactive-mode (i.e. ./pythonect)
+
+    else:
+
+        PythonectInteractiveConsole().interact(banner)
+
+    return 0
+
+
 # Entry Point
 
 if __name__ == "__main__":
-	
-	sys.exit(main())
-	
+
+    sys.exit(main())
