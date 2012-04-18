@@ -1,0 +1,31 @@
+Ticket numbers in this file can be looked up by visiting
+http://github.com/ikotler/pythonect/issues/<number>
+
+
+What's New in Pythonect 0.1.1?
+==============================
+
+*Release date: 18-Apr-2012*
+
+Core and builtins
+-----------------
+
+- Issue #3: Check that the program return value is not None before printing it  
+
+Build
+-----
+
+- Issue #1: Removed import from __init__ to avoid PLY imports via setup.py.
+
+Miscellaneous
+-------------
+
+- Add NEWS file
+
+
+What's New in Pythonect 0.1?
+============================
+
+*Release date: 01-Apr-2012*
+
+Everything :-)
