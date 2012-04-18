@@ -9,8 +9,3 @@ except ImportError, e:
     from internal.version import get_version
 
     __version__ = get_version()
-
-
-# Export `eval`
-
-from .eval import eval
