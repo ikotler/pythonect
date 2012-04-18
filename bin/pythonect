@@ -57,7 +57,13 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
         try:
 
-            self.write(str(pythonect.eval.eval(code_, self.locals, {})) + '\n')
+            return_value = pythonect.eval.eval(code_, self.locals, {})
+
+            # None?
+
+            if return_value is not None:
+                
+                self.write(str(return_value) + '\n')
 
             # TODO: discard value, need to think about a better way to handle `_` in-between runcodes()
 
