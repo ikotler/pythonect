@@ -80,6 +80,14 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(eval.eval('1 | None', {}, {}), 1)
 
+    def test_literal_int_async_dict(self):
+
+        self.assertEqual(eval.eval('1 -> {1: "One", 2: "Two"}', {}, {}), "One")
+
+    def test_literal_int_sync_dict(self):
+
+        self.assertEqual(eval.eval('1 | {1: "One", 2: "Two"}', {}, {}), "One")
+
     def test_literal_int_async_literal_int(self):
 
         self.assertEqual(eval.eval('1 -> 1', {}, {}), 1)
@@ -98,19 +106,19 @@ class TestPythonect(unittest.TestCase):
 
     def test_python_stmt_assignment_async_literal_int(self):
 
-        self.assertEqual(eval.eval('[ x = 0 ] -> 1', {}, {}), 1)
+        self.assertEqual(eval.eval('[x = 0] -> 1', {}, {}), 1)
 
     def test_python_stmt_assignment_sync_literal_int(self):
 
-        self.assertEqual(eval.eval('[ x = 0 ] | 1', {}, {}), 1)
+        self.assertEqual(eval.eval('[x = 0] | 1', {}, {}), 1)
 
     def test_python_stmt_assignment_sync_variable(self):
 
-        self.assertEqual(eval.eval('[ x = 0 ] | x', {}, {}), 0)
+        self.assertEqual(eval.eval('[x = 0] | x', {}, {}), 0)
 
     def test_python_stmt_assignment_async_variable(self):
 
-        self.assertEqual(eval.eval('[ x = 0 ] -> x', {}, {}), 0)
+        self.assertEqual(eval.eval('[x = 0] -> x', {}, {}), 0)
 
     def test_literal_array_int_int_sync_none(self):
 
@@ -120,9 +128,17 @@ class TestPythonect(unittest.TestCase):
 
         self.assertItemsEqual(eval.eval('[1, 2] -> None', {}, {}), [1, 2])
 
+    def test_literal_array_int_int_sync_dict(self):
+
+        self.assertEqual(eval.eval('[1, 2] | {1: "One", 2: "Two"}', {}, {}), ["One", "Two"])
+
+    def test_literal_array_int_int_async_dict(self):
+
+        self.assertItemsEqual(eval.eval('[1, 2] -> {1: "One", 2: "Two"}', {}, {}), ["One", "Two"])
+
     def test_literal_array_int_str_async_none(self):
 
-        self.assertItemsEqual(eval.eval('[1,"Hello"] -> None', {}, {}), [1, "Hello"])
+        self.assertItemsEqual(eval.eval('[1, "Hello"] -> None', {}, {}), [1, "Hello"])
 
     def test_literal_array_int_str_sync_none(self):
 
@@ -130,7 +146,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_array_int_str_async_int(self):
 
-        self.assertItemsEqual(eval.eval('[1,"Hello"] -> 1', {}, {}), [1, 1])
+        self.assertItemsEqual(eval.eval('[1, "Hello"] -> 1', {}, {}), [1, 1])
 
     def test_literal_array_int_str_sync_int(self):
 
@@ -146,11 +162,11 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_array_int_int_sync_literal_array_int_int(self):
 
-        self.assertEqual(eval.eval('[1, 2] | [3,4]', {}, {}), [3, 4, 3, 4])
+        self.assertEqual(eval.eval('[1, 2] | [3, 4]', {}, {}), [3, 4, 3, 4])
 
     def test_literal_array_int_int_async_literal_array_int_int(self):
 
-        self.assertItemsEqual(eval.eval('[1, 2] -> [3,4]', {}, {}), [3, 3, 4, 4])
+        self.assertItemsEqual(eval.eval('[1, 2] -> [3, 4]', {}, {}), [3, 3, 4, 4])
 
     def test_literal_int_async_stmt_single_return_value_function_async_single_return_value_function(self):
 

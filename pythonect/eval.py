@@ -146,6 +146,16 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
             output = input
 
+        if isinstance(output, dict):
+
+            # 1 -> {1: 'One', 2: 'Two'} = 'One'
+
+            output = output.get(input, False)
+
+            if output is False:
+
+                return None
+
         # `output` is array or discrete?
 
         if not isinstance(output, tuple(ignore_iterables)) and __isiter(output):
