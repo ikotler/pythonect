@@ -2,6 +2,28 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+What's New in Pythonect 0.2?
+============================
+
+*Release date: 30-Apr-2012*
+
+Core and builtins
+-----------------
+
+- Feature #8: Implemented Autoloading.
+
+- Feature #7: Python built-in dictionary can be used as a switch statement.
+
+- Issue #6: Interpreter prints Strings without quotes
+
+- Issue #5: Interpreter lags when pressing Enter key multiple times
+
+Build
+-----
+
+- Issue #4: Pythonect reports incorrect version if installed via pip/sdist.
+
+
 What's New in Pythonect 0.1.1?
 ==============================
 
