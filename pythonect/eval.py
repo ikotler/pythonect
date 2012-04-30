@@ -214,78 +214,86 @@ def __extend_builtins(globals_):
 
 def eval(source, globals_, locals_):
 
-    return_value = []
+    return_value = None
 
-    waiting_list = []
+    # Meaningful program?
 
-    # Parse Pythonect
+    if source != "pass":
 
-    parser = internal.parser.Parser()
+        return_values = []
 
-    # Extend Python's __builtin__ with Pythonect's `lang`
+        waiting_list = []
 
-    final_globals_ = __extend_builtins(globals_)
+        # Parse Pythonect
 
-    # Default input
+        parser = internal.parser.Parser()
 
-    if final_globals_.get('_', None) is None:
+        # Extend Python's __builtin__ with Pythonect's `lang`
 
-        final_globals_['_'] = locals_.get('_', None)
+        final_globals_ = __extend_builtins(globals_)
 
-    # Iterate Pythonect program
+        # Default input
 
-    for expression in parser.parse(source):
+        if final_globals_.get('_', None) is None:
 
-        # Execute Pythonect expression
+            final_globals_['_'] = locals_.get('_', None)
 
-        thread_return_value_queue = queue.Queue()
+        # Iterate Pythonect program
 
-        thread = threading.Thread(target=__run, args=(expression, final_globals_, locals_, thread_return_value_queue, True))
+        for expression in parser.parse(source):
 
-        thread.start()
+            # Execute Pythonect expression
 
-        waiting_list.append((thread, thread_return_value_queue))
+            thread_return_value_queue = queue.Queue()
 
-    # Join threads by execution order
+            thread = threading.Thread(target=__run, args=(expression, final_globals_, locals_, thread_return_value_queue, True))
 
-    for (thread, thread_queue) in waiting_list:
+            thread.start()
 
-        thread.join()
+            waiting_list.append((thread, thread_return_value_queue))
 
-        try:
+        # Join threads by execution order
 
-            # While queue contain return value(s)
+        for (thread, thread_queue) in waiting_list:
 
-            while True:
+            thread.join()
 
-                thread_return_value = thread_queue.get(True, 1)
+            try:
 
-                thread_queue.task_done()
+                # While queue contain return value(s)
 
-                return_value.append(thread_return_value)
+                while True:
 
-        except queue.Empty:
+                    thread_return_value = thread_queue.get(True, 1)
 
-            pass
+                    thread_queue.task_done()
 
-    # [...] ?
+                    return_values.append(thread_return_value)
 
-    if return_value:
+            except queue.Empty:
 
-        # Single return value? (e.g. [1])
+                pass
 
-        if len(return_value) == 1:
+        return_value = return_values
 
-            return_value = return_value[0]
+        # [...] ?
 
-    # [] ?
+        if return_value:
 
-    else:
+            # Single return value? (e.g. [1])
 
-        return_value = False
+            if len(return_value) == 1:
 
-    # Set `return value` as `_`
+                return_value = return_value[0]
 
-    globals_['_'] = locals_['_'] = return_value
+        # [] ?
+
+        else:
+
+            return_value = False
+
+        # Set `return value` as `_`
+
+        globals_['_'] = locals_['_'] = return_value
 
     return return_value
