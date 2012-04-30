@@ -88,6 +88,14 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(eval.eval('1 | {1: "One", 2: "Two"}', {}, {}), "One")
 
+    def test_literal_str_async_autoload(self):
+
+        self.assertEqual(eval.eval('"Hello world" -> string.split', {}, {}), ["Hello", "world"])
+
+    def test_literal_str_sync_autoload(self):
+
+        self.assertItemsEqual(eval.eval('"Hello world" | string.split', {}, {}), ["Hello", "world"])
+
     def test_literal_int_async_literal_int(self):
 
         self.assertEqual(eval.eval('1 -> 1', {}, {}), 1)

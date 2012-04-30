@@ -3,6 +3,7 @@ import Queue as queue
 import threading
 import copy
 import logging
+import importlib
 
 
 # Local imports
@@ -47,6 +48,54 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
         object_or_objects = python.eval(atom, globals_, locals_)
 
+    except NameError, e:
+
+        try:
+
+            module_full_name = atom
+
+            # Find the longest possible module name
+
+            while True:
+
+                module_full_name = module_full_name[:module_full_name.rindex('.')]
+
+                # EXIT #1: EOS, thus rindex will raise ValueError if module_full_name does not contain '.'
+
+                try:
+
+                    importlib.import_module(module_full_name)
+
+                except ImportError, e:
+
+                    # Try a shorter module name
+
+                    continue
+
+                # EXIT #2: module_full_name is a valid import()-able name
+
+                break
+
+            # Load modules in revrse (bottom to top) order
+
+            prefix = ""
+
+            for module_name in module_full_name.split('.'):
+
+                globals_.update({prefix + module_name: importlib.import_module(prefix + module_name)})
+
+                prefix = prefix + module_name + '.'
+
+            # Try again
+
+            object_or_objects = python.eval(atom, globals_, locals_)
+
+        except Exception, e1:
+
+            # raise NameError
+
+            raise e
+
     except Exception, e:
 
         object_or_objects = atom
@@ -59,6 +108,14 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
     if not isinstance(object_or_objects, tuple(ignore_iterables)) and __isiter(object_or_objects):
 
         for item in object_or_objects:
+
+            # TODO: This is a hack to prevent from item to be confused as fcn call and raise NameError.
+
+            if isinstance(item, basestring):
+
+                # i.e. [1, 'Hello'] -> eval() = [1, Hello] , this fixup Hello to be 'Hello' again
+
+                item = "'" + item + "'"
 
             thread = threading.Thread(target=__run, args=([(operator, item)] + expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, not iterate_literal_arrays))
 
