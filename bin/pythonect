@@ -59,10 +59,18 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
             return_value = pythonect.eval.eval(code_, self.locals, {})
 
-            # None?
+            # Meaningful Return Value?
 
             if return_value is not None:
-                
+
+                # String?
+
+                if isinstance(return_value, basestring):
+
+                    # Enclose in single quotes
+
+                    return_value = "'" + return_value + "'"
+
                 self.write(str(return_value) + '\n')
 
             # TODO: discard value, need to think about a better way to handle `_` in-between runcodes()
