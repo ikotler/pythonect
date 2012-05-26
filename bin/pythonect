@@ -6,6 +6,7 @@ import code
 import codeop
 import argparse
 import logging
+import os
 
 
 try:
@@ -125,6 +126,10 @@ def main():
     # Interactive-mode (i.e. ./pythonect)
 
     else:
+
+        # Add current working directory to sys.path
+
+        sys.path.insert(0, os.getcwd())
 
         PythonectInteractiveConsole().interact(banner)
 
