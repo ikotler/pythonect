@@ -19,6 +19,51 @@ def __expr_list_to_str(expr_list):
     return expr_list[0][1] + ' ' + expr_list[0][0] + ' ' + __expr_list_to_str(expr_list[1:])
 
 
+def __split(buffer):
+
+    new_buffer = []
+
+    depth = 0
+
+    points = []
+
+    for idx in xrange(0, len(buffer)):
+
+        char = buffer[idx]
+
+        if char == '[' or char == '(' or char == '{':
+
+            depth = depth + 1
+
+        if char == ']' or char == ')' or char == '}':
+
+            depth = depth - 1
+
+        if char == ',' and depth == 0:
+
+            points.append(idx)
+
+    if not points:
+
+        # One item
+
+        new_buffer.append(buffer)
+
+    else:
+
+        # Multiple items
+
+        for point in points:
+
+            new_buffer.append(buffer[:point])
+
+        # Last item
+
+        new_buffer.append(buffer[point + 1:])
+
+    return new_buffer
+
+
 def __scope(buffer):
 
     scope = []
@@ -101,6 +146,38 @@ def preprocessor(buffer, stmt_as_is, tries=0):
                 type = 'PYTHON_EXPRESSION'
 
                 new_buffer = buffer
+
+                # Is value is List or Tuple?
+
+                if isinstance(node.value, _ast.List) or isinstance(node.value, _ast.Tuple):
+
+                    # TODO: This is a hack, should be reimplemented
+
+                    array_content = []
+
+                    for item in __split(buffer[1:-1]):
+
+                        item_node = ast.parse(item).body[0].value
+
+                        # Is item *NOT* a literal, and not already wrapped (i.e. Pythonect statement)?
+
+                        if (isinstance(item_node, _ast.Call) or isinstance(item_node, _ast.Attribute) or isinstance(item_node, _ast.Name)) and not item.startswith('__builtins__'):
+
+                                array_content.append('__builtins__.expr(\'' + item + '\')')
+
+                        # Is item literal?
+
+                        else:
+
+                            array_content.append(item)
+
+                    if isinstance(node.value, _ast.List):
+
+                        new_buffer = '[' + ','.join(array_content) + ']'
+
+                    if isinstance(node.value, _ast.Tuple):
+
+                        new_buffer = '(' + ','.join(array_content) + ')'
 
             # Rewrite Python's `print` statement as an expression
 

@@ -223,3 +223,29 @@ class TestPythonect(unittest.TestCase):
     def test_literal_int_sync_stmt_generator_return_value_function_sync_generator_return_value_function(self):
 
         self.assertEqual(eval.eval('1 | def foobar(x): yield x; yield x+1 | foobar', {}, {}), [1, 2])
+
+    def test_singlethread_program_async(self):
+
+        self.assertEqual(eval.eval('import threading -> x = threading.current_thread().name -> y = threading.current_thread().name -> x == y', {}, {}), None)
+
+    def test_singlethread_program_sync(self):
+
+        self.assertEqual(eval.eval('import threading | x = threading.current_thread().name | y = threading.current_thread().name | x == y', {}, {}), None)
+
+    def test_multithread_program_async(self):
+
+        r_array = eval.eval('import threading -> [threading.current_thread().name, threading.current_thread().name]', {}, {})
+
+        self.assertEqual(r_array[0] != r_array[1], True)
+
+    def test_multithread_program_sync(self):
+
+        r_array = eval.eval('import threading | [threading.current_thread().name, threading.current_thread().name]', {}, {})
+
+        self.assertEqual(r_array[0] != r_array[1], True)
+
+    # Bug #11
+
+    def test_autloader_within_array(self):
+
+        self.assertItemsEqual(eval.eval('"Hello world" | [string.split]', {}, {}), ["Hello", "world"])
