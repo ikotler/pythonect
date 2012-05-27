@@ -2,6 +2,19 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+What's New in Pythonect 0.2.1?
+==============================
+
+*Release date: 27-May-2012*
+
+Core and builtins
+-----------------
+
+- Issue #9: Autoload won't load modules from current working directory
+
+- Issue #11: Autoload parses name incorrectly if in a list or tuple
+
+
 What's New in Pythonect 0.2?
 ============================
 
