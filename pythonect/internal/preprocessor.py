@@ -1,6 +1,7 @@
 import re
 import ast
 import _ast
+import codegen
 
 
 # Local imports
@@ -189,9 +190,7 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
                 if node.values:
 
-                    # i.e. "print_(...)"
-
-                    new_buffer = '__builtins__.print_(\'' + node.values[0].s + '\')'
+                    new_buffer = '__builtins__.print_(' + codegen.to_source(node)[5:] + ')'
 
                 # It's (a) Python and (b) expression
 
