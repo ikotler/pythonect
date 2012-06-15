@@ -25,7 +25,7 @@ def print_(object):
 
     # END OF CRITICAL SECTION
 
-    return object
+    return None
 
 
 # Classes

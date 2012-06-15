@@ -249,3 +249,9 @@ class TestPythonect(unittest.TestCase):
     def test_autloader_within_array(self):
 
         self.assertItemsEqual(eval.eval('"Hello world" | [string.split]', {}, {}), ["Hello", "world"])
+
+    # Bug #14
+
+    def test_print_like_statement(self):
+
+        self.assertEqual(eval.eval('range(1,10) -> print("Thread A")', {}, {}), [1, 2, 3, 4, 5, 6, 7, 8, 9])
