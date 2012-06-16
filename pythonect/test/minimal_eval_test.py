@@ -254,4 +254,36 @@ class TestPythonect(unittest.TestCase):
 
     def test_print_like_statement(self):
 
-        self.assertEqual(eval.eval('range(1,10) -> print("Thread A")', {}, {}), [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertItemsEqual(eval.eval('range(1,10) -> print("Thread A")', {}, {}), [1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    def test_multiple_stateful_x_eq_5_statement(self):
+
+        locals_ = {}
+
+        globals_ = {}
+
+        eval.eval('xrange(1, 10) -> x = _', globals_, locals_)
+
+        self.assertEqual('x' not in locals_ and 'x' not in globals_, True)
+
+        # i.e.
+
+        # >>> xrange(x, 10) -> x = _
+        # >>> x
+        # NameError: name 'x' is not defined
+
+    def test_stateful_x_eq_5_statement(self):
+
+        locals_ = {}
+
+        globals_ = {}
+
+        eval.eval('x = 5', globals_, locals_)
+
+        self.assertEqual(eval.eval('1 -> [x == 5]', globals_, locals_), 1)
+
+        # i.e.
+
+        # >>> x = 5
+        # >>> 1 -> [x == 5]
+        # 1

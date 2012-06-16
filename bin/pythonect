@@ -58,7 +58,7 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
         try:
 
-            return_value = pythonect.eval.eval(code_, self.locals, {})
+            return_value = pythonect.eval.eval(code_, {}, self.locals)
 
             # Meaningful Return Value?
 
@@ -74,9 +74,13 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
                 self.write(str(return_value) + '\n')
 
-            # TODO: discard value, need to think about a better way to handle `_` in-between runcodes()
+                # Keep return_value for further reference or reset to None?
 
-            self.locals['_'] = None
+                if return_value is False or return_value is True:
+
+                    # Reset locals to None
+
+                    self.locals['_'] = None
 
         except SystemExit:
 

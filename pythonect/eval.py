@@ -235,7 +235,7 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
                 else:
 
-                    return_value_queue.put(item)
+                    return_value_queue.put((item, globals_, locals_))
 
         else:
 
@@ -251,7 +251,7 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
             else:
 
-                return_value_queue.put(output)
+                return_value_queue.put((output, globals_, locals_))
 
         for thread in threads:
 
@@ -279,6 +279,44 @@ def __extend_builtins(globals_):
     return globals_
 
 
+def __merge_dicts(d1, d2, ignore_keys):
+
+    result = dict(d1)
+
+    for k, v in d2.iteritems():
+
+        if k not in ignore_keys:
+
+            if k in result:
+
+                if result[k] != v:
+
+                    # TODO: Is this the best way to handle multiple/different v`s of k?
+
+                    del result[k]
+
+                    ignore_keys.update({k: True})
+
+            else:
+
+                result[k] = v
+
+    return result
+
+
+def __merge_all_globals_and_locals(current_globals, current_locals, globals_list=[], ignore_globals_keys={}, locals_list=[], ignore_locals_keys={}):
+
+    current_globals = __merge_dicts(current_globals, globals_list.pop(), ignore_globals_keys)
+
+    current_locals = __merge_dicts(current_locals, locals_list.pop(), ignore_locals_keys)
+
+    if not globals_list or not locals_list:
+
+        return current_globals, current_locals
+
+    return __merge_all_globals_and_locals(current_globals, current_locals, globals_list, ignore_globals_keys, locals_list, ignore_locals_keys)
+
+
 def eval(source, globals_, locals_):
 
     return_value = None
@@ -288,6 +326,10 @@ def eval(source, globals_, locals_):
     if source != "pass":
 
         return_values = []
+
+        globals_values = []
+
+        locals_values = []
 
         waiting_list = []
 
@@ -331,11 +373,15 @@ def eval(source, globals_, locals_):
 
                 while True:
 
-                    thread_return_value = thread_queue.get(True, 1)
+                    (thread_return_value, thread_globals, thread_locals) = thread_queue.get(True, 1)
 
                     thread_queue.task_done()
 
                     return_values.append(thread_return_value)
+
+                    locals_values.append(thread_locals)
+
+                    globals_values.append(thread_globals)
 
             except queue.Empty:
 
@@ -352,6 +398,14 @@ def eval(source, globals_, locals_):
             if len(return_value) == 1:
 
                 return_value = return_value[0]
+
+            # Update globals_ and locals_
+
+            new_globals, new_locals = __merge_all_globals_and_locals(globals_, locals_, globals_values, {}, locals_values, {})
+
+            globals_.update(new_globals)
+
+            locals_.update(new_locals)
 
         # [] ?
 
