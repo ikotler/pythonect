@@ -96,9 +96,17 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
             raise e
 
-    except Exception, e:
+    except TypeError, e:
 
-        object_or_objects = atom
+        # Due to eval()?
+
+        if (e.message == 'eval() arg 1 must be a string or code object'):
+
+            object_or_objects = atom
+
+        else:
+
+            raise e
 
     # [1,2,3] -> [a,b,c] =
     #       Thread 1: 1 -> [a,b,c]

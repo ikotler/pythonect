@@ -287,3 +287,9 @@ class TestPythonect(unittest.TestCase):
         # >>> x = 5
         # >>> 1 -> [x == 5]
         # 1
+
+    # Bug #16
+
+    def test_typeerror_exception_not_due_to_eval(self):
+
+        self.assertEqual(eval.eval('1 -> socket.socket(socket.AF_INET, socket.SOCK_STREAM) -> _.connect("A","B")', {}, {}), False)
