@@ -102,21 +102,53 @@ def tearDownModule():
 
 class TestPythonectRemoting(unittest.TestCase):
 
-    def test_int_async_remotefunction(self):
+    def test_int_async_remotefunction_const_host(self):
 
         self.assertEqual(eval.eval('1 -> inc@xmlrpc://localhost:8000', {}, {}), 2)
 
-    def test_int_sync_remotefunction(self):
+    def test_int_sync_remotefunction_const_host(self):
 
         self.assertEqual(eval.eval('1 | inc@xmlrpc://localhost:8000', {}, {}), 2)
 
-    def test_int_async_remotefunction_with_args(self):
+    def test_int_async_remotefunction_with_args_const_host(self):
 
         self.assertEqual(eval.eval('1 -> inc(1)@xmlrpc://localhost:8000', {}, {}), 2)
 
-    def test_int_sync_remotefunction_with_args(self):
+    def test_int_sync_remotefunction_with_args_const_host(self):
 
         self.assertEqual(eval.eval('1 | inc(1)@xmlrpc://localhost:8000', {}, {}), 2)
+
+    def test_int_async_remotefunction_literal_expr(self):
+
+        self.assertEqual(eval.eval('1 -> inc@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+
+    def test_int_sync_remotefunction_literal_expr(self):
+
+        self.assertEqual(eval.eval('1 | inc@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+
+    def test_int_async_remotefunction_with_args_literal_expr(self):
+
+        self.assertEqual(eval.eval('1 -> inc(1)@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+
+    def test_int_sync_remotefunction_with_args_literal_expr(self):
+
+        self.assertEqual(eval.eval('1 | inc(1)@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+
+    def test_int_async_remotefunction_expr(self):
+
+        self.assertEqual(eval.eval('[host = "localhost"] -> 1 -> inc@"xmlrpc://" + host + ":8000"', {}, {}), 2)
+
+    def test_int_sync_remotefunction_expr(self):
+
+        self.assertEqual(eval.eval('[host = "localhost"] -> 1 | inc@"xmlrpc://" + host + ":8000"', {}, {}), 2)
+
+    def test_int_async_remotefunction_with_args_expr(self):
+
+        self.assertEqual(eval.eval('[host = "localhost"] -> 1 -> inc(1)@"xmlrpc://" + host + ":8000"', {}, {}), 2)
+
+    def test_int_sync_remotefunction_with_args_expr(self):
+
+        self.assertEqual(eval.eval('[host = "localhost"] -> 1 | inc(1)@"xmlrpc://" + host + ":8000"', {}, {}), 2)
 
 # Standard XML-RPC does not support **kwargs
 

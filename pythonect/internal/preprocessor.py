@@ -306,7 +306,7 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
             fcn_name = fcn_name.split('(')[0]
 
-            new_buffer = new_buffer.replace(function_address, '__builtins__.remotefunction(\'' + fcn_name + '\',\'' + fcn_host + '\')(' + fcn_args + ')')
+            new_buffer = new_buffer.replace(function_address, '__builtins__.remotefunction(\'' + fcn_name + '\',\'' + fcn_host + '\',' + fcn_args + ')')
 
         # foobar@xmlrpc://...
 

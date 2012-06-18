@@ -175,6 +175,12 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
         if callable(output):
 
+            # Remote?
+
+            if isinstance(output, lang.remotefunction):
+
+                output.evaluate_host(globals_, locals_)
+
             # Python Statement?
 
             if isinstance(output, (lang.stmt, lang.expr)):
@@ -182,8 +188,6 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
                 output = output(globals_, locals_)
 
             else:
-
-                # TODO: This should be wraped in eval() otherwise `output()` can affect `__run` globals
 
                 output = output(input)
 
