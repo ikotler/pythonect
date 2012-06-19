@@ -152,7 +152,29 @@ class stmt(object):
 
         __original_input = globals_.get('_', None)
 
-        exec self.__statement in globals_, locals_
+        try:
+
+            exec self.__statement in globals_, locals_
+
+        except NameError, e:
+
+                try:
+
+                    import importlib
+
+                    # NameError: name 'os' is not defined
+
+                    mod_name = e.message.split()[1][1:-1]
+
+                    globals_.update({mod_name: importlib.import_module(mod_name)})
+
+                    exec self.__statement in globals_, locals_
+
+                except Exception, e1:
+
+                    # raise original Exception
+
+                    raise e
 
         # Restore `_`
 
