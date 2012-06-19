@@ -28,6 +28,8 @@ def __split(buffer):
 
     points = []
 
+    in_str = False
+
     for idx in xrange(0, len(buffer)):
 
         char = buffer[idx]
@@ -39,6 +41,16 @@ def __split(buffer):
         if char == ']' or char == ')' or char == '}':
 
             depth = depth - 1
+
+        if char == '"' or char == "'":
+
+            if in_str:
+
+                depth = depth - 1
+
+            else:
+
+                depth = depth + 1
 
         if char == ',' and depth == 0:
 
