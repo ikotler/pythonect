@@ -123,6 +123,7 @@ def preprocessor(buffer, stmt_as_is, tries=0):
     # For each item in [], preprocess item (recursive)
     # For each item in (), preprocess item (recursive)
     # For each function address, preprocess function_address, return __builtins__.remotefunction()
+    # For each trailing &, return __builtins__.attributedcode()
 
     ##########
     # PYTHON #
@@ -313,6 +314,18 @@ def preprocessor(buffer, stmt_as_is, tries=0):
         else:
 
             new_buffer = new_buffer.replace(function_address, '__builtins__.remotefunction(\'' + fcn_name + '\',\'' + fcn_host + '\')')
+
+    # Change Provider to Process?
+
+    if new_buffer.rstrip()[-1] == '&':
+
+        new_buffer = new_buffer.rstrip()[:-1]
+
+        actual_buffer = preprocessor(new_buffer, stmt_as_is, tries)
+
+        # Assume new_buffer is from PYTHON_EXPRESSION
+
+        new_buffer = '__builtins__.attributedcode("(operator, \'%s\')", "(iterate_literal_arrays, multiprocessing.Process, multiprocessing.Queue)")' % actual_buffer[1]
 
     # Try again!
 

@@ -4,6 +4,8 @@ import threading
 import copy
 import logging
 import importlib
+import multiprocessing
+import types
 
 
 # Local imports
@@ -30,11 +32,65 @@ def __isiter(object):
         return False
 
 
-def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arrays):
+def __pickable_dict(locals_or_globals):
 
-    threads = []
+    result = dict(locals_or_globals)
+
+    for k, v in locals_or_globals.iteritems():
+
+        if isinstance(v, types.ModuleType):
+
+            del result[k]
+
+    return result
+
+
+def __queue_to_queue(source_queue, dest_queue):
+
+    try:
+
+        # While source queue contain return value(s)
+
+        while True:
+
+            (resource_return_value, resource_globals, resource_locals) = source_queue.get(True, 1)
+
+            dest_queue.put((resource_return_value, resource_globals, resource_locals), True, 1)
+
+    except queue.Empty:
+
+        pass
+
+
+def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arrays, provider=threading.Thread):
+
+    resources = []
 
     (operator, atom) = expression[0]
+
+    changed_provider = False
+
+    orig_return_value_queue = return_value_queue
+
+    # Thread or Process?
+
+    if expression[1:] and expression[1][1].startswith('__builtins__.attributedcode'):
+
+        future_object = python.eval(expression[1][1], globals_, locals_)
+
+        (ignored_value, new_provider, new_return_value_queue) = python.eval(future_object.get_attributes())
+
+        if new_provider != provider:
+
+            changed_provider = True
+
+            return_value_queue = new_return_value_queue()
+
+        provider = new_provider
+
+        # Unpack __builtins.__attributedcode()
+
+        expression[1] = python.eval(future_object.get_expression())
 
     ignore_iterables = [str, unicode, dict]
 
@@ -125,31 +181,39 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
                 item = "'" + item + "'"
 
-            thread = threading.Thread(target=__run, args=([(operator, item)] + expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, not iterate_literal_arrays))
+            resource = provider(target=__run, args=([(operator, item)] + expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, not iterate_literal_arrays, provider))
 
-            thread.start()
+            resource.start()
 
             # Synchronous
 
             if operator == '|':
 
-                thread.join()
+                resource.join()
+
+                if changed_provider:
+
+                    __queue_to_queue(return_value_queue, orig_return_value_queue)
 
             # Asynchronous
 
             else:
 
-                threads.append(thread)
+                resources.append(resource)
 
         # Asynchronous
 
-        if threads:
+        if resources:
 
-            # Wait for threads
+            # Wait for resources
 
-            for thread in threads:
+            for resource in resources:
 
-                thread.join(None)
+                resource.join(None)
+
+                if changed_provider:
+
+                    __queue_to_queue(return_value_queue, orig_return_value_queue)
 
     # 1 -> [a,b,c]
 
@@ -199,7 +263,7 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
         if output is False:
 
-            # 1 -> False = <Terminate Thread>
+            # 1 -> False = <Terminate resource>
 
             return None
 
@@ -239,11 +303,11 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
                     # Call next atom in expression with `item` as `input`
 
-                    thread = threading.Thread(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True))
+                    resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True, provider))
 
-                    thread.start()
+                    resource.start()
 
-                    threads.append(thread)
+                    resources.append(resource)
 
                 else:
 
@@ -251,23 +315,41 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
         else:
 
-            # Same thread, next atom
+            # Same resource, next atom
 
             globals_['_'] = locals_['_'] = output
 
             if expression[1:]:
 
-                # Call next atom in expression with `output` as `input`
+                # If Thread, use the same thread, If Process, spawn a new one
 
-                __run(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True)
+                if provider == threading.Thread:
+
+                    # Call next atom in expression with `output` as `input`
+
+                    __run(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True)
+
+                else:
+
+                    # Process
+
+                    resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True))
+
+                    resource.start()
+
+                    resources.append(resource)
 
             else:
 
-                return_value_queue.put((output, globals_, locals_))
+                return_value_queue.put((output, __pickable_dict(globals_), __pickable_dict(locals_)))
 
-        for thread in threads:
+        for resource in resources:
 
-            thread.join(None)
+            resource.join(None)
+
+            if changed_provider:
+
+                __queue_to_queue(return_value_queue, orig_return_value_queue)
 
 
 def __extend_builtins(globals_):
@@ -365,19 +447,19 @@ def eval(source, globals_, locals_):
 
             # Execute Pythonect expression
 
-            thread_return_value_queue = queue.Queue()
+            resource_return_value_queue = queue.Queue()
 
-            thread = threading.Thread(target=__run, args=(expression, final_globals_, locals_, thread_return_value_queue, True))
+            resource = threading.Thread(target=__run, args=(expression, final_globals_, locals_, resource_return_value_queue, True))
 
-            thread.start()
+            resource.start()
 
-            waiting_list.append((thread, thread_return_value_queue))
+            waiting_list.append((resource, resource_return_value_queue))
 
-        # Join threads by execution order
+        # Join resources by execution order
 
-        for (thread, thread_queue) in waiting_list:
+        for (resource, resource_queue) in waiting_list:
 
-            thread.join()
+            resource.join()
 
             try:
 
@@ -385,15 +467,15 @@ def eval(source, globals_, locals_):
 
                 while True:
 
-                    (thread_return_value, thread_globals, thread_locals) = thread_queue.get(True, 1)
+                    (resource_return_value, resource_globals, resource_locals) = resource_queue.get(True, 1)
 
-                    thread_queue.task_done()
+                    resource_queue.task_done()
 
-                    return_values.append(thread_return_value)
+                    return_values.append(resource_return_value)
 
-                    locals_values.append(thread_locals)
+                    locals_values.append(resource_locals)
 
-                    globals_values.append(thread_globals)
+                    globals_values.append(resource_globals)
 
             except queue.Empty:
 

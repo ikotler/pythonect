@@ -17,7 +17,13 @@ def print_(object):
 
     __builtin__.__GIL__.acquire()
 
-    sys.stdout.write("<%s:%s> : %s\n" % (multiprocessing.current_process().name, threading.current_thread().name, object))
+    if multiprocessing.current_process().name == 'MainProcess':
+
+        sys.stdout.write("<%s:%s> : %s\n" % (multiprocessing.current_process().name, threading.current_thread().name, object))
+
+    else:
+
+        sys.stdout.write("<PID #%d> : %s\n" % (multiprocessing.current_process().pid, object))
 
     sys.stdout.flush()
 
@@ -29,6 +35,23 @@ def print_(object):
 
 
 # Classes
+
+class attributedcode(object):
+
+    def __init__(self, expression, attributes):
+
+        self.__attributes = attributes
+
+        self.__expression = expression
+
+    def get_expression(self):
+
+        return self.__expression
+
+    def get_attributes(self):
+
+        return self.__attributes
+
 
 class remotefunction(object):
 

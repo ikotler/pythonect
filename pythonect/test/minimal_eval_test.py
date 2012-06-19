@@ -244,6 +244,14 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
+    def test_multiprocess_program_async(self):
+
+        self.assertEqual(eval.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', {}, {}), 1)
+
+    def test_multiprocess_program_sync(self):
+
+        self.assertEqual(eval.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
+
     # Bug #11
 
     def test_autloader_within_array(self):
