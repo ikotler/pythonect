@@ -31,7 +31,10 @@ class PythonectCompile(codeop.Compile):
 
     def __call__(self, source, filename, symbol):
 
-        return source
+        if source[-1] == '\\':
+            return None
+
+        return source.replace('\\\n', '')
 
 
 class PythonectCommandCompiler(codeop.CommandCompiler):
