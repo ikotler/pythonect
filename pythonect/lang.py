@@ -67,6 +67,10 @@ class remotefunction(object):
 
         self.__remote_fcn_kwargs = kwargs
 
+        self.__locals = None
+
+        self.__globals = None
+
     def __repr__(self):
 
         if self.__remote_fcn:
@@ -78,6 +82,10 @@ class remotefunction(object):
             return "%s(%s,%s)@%s" % (self.__name, self.__remote_fcn_args, self.__remote_fcn_kwargs, self.__host)
 
     def evaluate_host(self, globals_, locals_):
+
+        self.__locals = locals_
+
+        self.__globals = globals_
 
         try:
 
@@ -101,9 +109,15 @@ class remotefunction(object):
 
             call_kwargs = self.__remote_fcn_kwargs
 
+        # Pseudo Protocol
+
+        if self.__host is None or self.__host.startswith('None'):
+
+            self.__remote_fcn = eval(self.__name, self.__globals, self.__locals)
+
         # Python XML-RPC
 
-        if self.__host.startswith('xmlrpc://'):
+        elif self.__host.startswith('xmlrpc://'):
 
             import xmlrpclib
 

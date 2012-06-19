@@ -252,6 +252,22 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(eval.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
 
+    def test_pseudo_none_const_as_url(self):
+
+        self.assertEqual(eval.eval('def foobar(x): return x+1 -> 1 -> foobar@None', {}, {}), 2)
+
+    def test_pseudo_none_str_as_url(self):
+
+        self.assertEqual(eval.eval('def foobar(x): return x+1 -> 1 -> foobar@"None"', {}, {}), 2)
+
+    def test_pseudo_none_value_fcn_return_value_as_url(self):
+
+        self.assertEqual(eval.eval('def ret_none(): return None -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', {}, {}), 2)
+
+    def test_pseudo_none_str_fcn_return_value_as_url(self):
+
+        self.assertEqual(eval.eval('def ret_none(): return "None" -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', {}, {}), 2)
+
     # Bug #11
 
     def test_autloader_within_array(self):
