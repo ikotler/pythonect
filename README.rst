@@ -2,44 +2,48 @@
 Pythonect
 =========
 
-Pythonect is a new, experimental, general-purpose dataflow programming language based on Python, written in Python.
+Pythonect_ is a new, experimental, general-purpose dataflow programming language based on Python, written in Python.
 It aims to combine the intuitive feel of shell scripting (and all of its perks like implicit parallelism) with the flexibility and agility of Python.
+
+.. _Pythonect: http://www.pythonect.org
 
 Hello, world
 ------------
 
 Here is the canonical "Hello, world" example program in Pythonect::
-	
+
 	"Hello, world" -> print
-	
+
+See the `Pythonect Tutorial: Learn By Example <https://github.com/ikotler/pythonect/wiki/Pythonect-Tutorial:-Learn-By-Example>`_ for more examples and details.
+
 Installation
 ------------
 
 There are a few ways to install Pythonect.
 
 1. You can install directly from PyPI_ using ``easy_install`` or pip_::
-	
+
         easy_install Pythonect
-	
+
    or::
-	
+
         pip install Pythonect
-	
+
 2. You can clone the git repository somewhere in your system::
-	
+
         git clone git://github.com/ikotler/pythonect.git
-	
+
    Then you should do following steps::
-	
+
         cd pythonect
         python setup.py install
-	
+
    Alternatively, if you use pip_, you can install directly from the git repository::
-	
+
         pip install \
         	git+git://github.com/ikotler/pythonect.git@master#egg=pythonect \
 		-r https://github.com/ikotler/pythonect/raw/master/doc/requirements.txt
-		
+
 For any of the above methods, if you want to do a system-wide installation, you will have to do this with *root* permissions (e.g. using ``su`` or ``sudo``).
 
 .. _PyPI: http://pypi.python.org/pypi/Pythonect/

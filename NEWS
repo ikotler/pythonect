@@ -2,6 +2,40 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+What's New in Pythonect 0.3?
+============================
+
+*Release date: 20-Jun-2012*
+
+Core and builtins
+-----------------
+
+- Feature #13: Improved print function
+
+- Feature #15: Implemented Stateful Interpreter
+
+- Feature #17: Remote procedure URL can be an expression
+
+- Feature #18: Implemented Multiprocessing
+
+- Feature #20: Backslash can be used to join two or more physical lines into a logical line
+
+- Feature #22: Implemented None as pseudo remote protocol / URL
+
+- Issue #14: Print does not act as a pass-through statement
+
+- Issue #16: TypeError Exceptions are not been displayed
+
+- Issue #19: Autloading is not working in a statement
+
+- Issue #21: Preprocessor breaks on a List with a String that contains comma
+
+Build
+-----
+
+- Issue #12: No newline at the end of _version.py (PEP8)
+
+
 What's New in Pythonect 0.2.1?
 ==============================
 
