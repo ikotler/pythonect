@@ -65,15 +65,11 @@ def t_SOURCE(t):
 
             # `[]` , `()` and '{}'
 
-            if char == '[' \
-            or char == '(' \
-            or char == '{':
+            if char in '[({':
 
                 scope = scope + 1
 
-            if char == ']' \
-            or char == ')' \
-            or char == '}':
+            if char in '])}':
 
                 scope = scope - 1
 
