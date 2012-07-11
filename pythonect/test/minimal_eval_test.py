@@ -48,9 +48,21 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(eval.eval('1 + 1', {}, {}), 2)
 
-    def test_python_expr_str(self):
+    def test_python_expr_str_1(self):
 
         self.assertEqual(eval.eval('"Hello World"', {}, {}), "Hello World")
+
+    def test_python_expr_str_2(self):
+
+        self.assertEqual(eval.eval("'Hello World'", {}, {}), "Hello World")
+
+    def test_python_expr_str_3(self):
+
+        self.assertEqual(eval.eval('"Hello \'W\'orld"', {}, {}), "Hello 'W'orld")
+
+    def test_python_expr_str_4(self):
+
+        self.assertEqual(eval.eval("'Hello \"W\"orld'", {}, {}), 'Hello "W"orld')
 
     def test_python_expr_list(self):
 

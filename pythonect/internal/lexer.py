@@ -53,11 +53,15 @@ def t_SOURCE(t):
 
             if char == '\"':
 
-                dquotes = dquotes - 1
+                if dquotes:
+
+                    dquotes = dquotes - 1
 
             if char == '\'':
 
-                squotes = squotes - 1
+                if squotes:
+
+                    squotes = squotes - 1
 
             # Ignore other characters
 
