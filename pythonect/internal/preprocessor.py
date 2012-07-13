@@ -177,7 +177,7 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
                         if (isinstance(item_node, _ast.Call) or isinstance(item_node, _ast.Attribute) or isinstance(item_node, _ast.Name)) and not item.startswith('__builtins__'):
 
-                                array_content.append('__builtins__.expr(\'' + item + '\')')
+                                array_content.append('__builtins__.expr(\'' + re.sub('\'', '\\\'', item) + '\')')
 
                         # Is item literal?
 
