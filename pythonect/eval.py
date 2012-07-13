@@ -121,9 +121,7 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
         except Exception, e1:
 
-            # raise original Exception
-
-            raise e
+            raise e1
 
     except TypeError, e:
 
