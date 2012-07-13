@@ -335,3 +335,9 @@ class TestPythonect(unittest.TestCase):
     def test_list_with_str_with_comma(self):
 
         self.assertEqual(eval.eval('["Hello, world"]', {}, {}), 'Hello, world')
+
+    # Bug #27
+
+    def test_multi_processing_and_multi_threading(self):
+
+        self.assertEqual(eval.eval('"Hello, world" -> [print, print &]', {}, {}), ['Hello, world', 'Hello, world'])

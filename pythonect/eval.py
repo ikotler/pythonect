@@ -6,6 +6,7 @@ import logging
 import importlib
 import multiprocessing
 import types
+import time
 
 
 # Local imports
@@ -153,9 +154,41 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
                 item = "'" + item + "'"
 
+            # Process? (i.e. 'Hello, world' -> [print, print &])
+
+            if isinstance(item, lang.attributedcode):
+
+                (ignored_value, new_provider, new_return_value_queue) = python.eval(item.get_attributes())
+
+                if new_provider != provider:
+
+                    changed_provider = True
+
+                    return_value_queue = new_return_value_queue()
+
+                provider = new_provider
+
+                # Unpack __builtins.__attributedcode()
+
+                expression = [(None, None), python.eval(item.get_expression())] + expression[1:]
+
+                # Overwrite `item` with current input
+
+                item = locals_.get('_', None)
+
+                if isinstance(item, basestring):
+
+                    # i.e. [1, 'Hello'] -> eval() = [1, Hello] , this fixup Hello to be 'Hello' again
+
+                    item = "'" + item + "'"
+
             resource = provider(target=__run, args=([(operator, item)] + expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, not iterate_literal_arrays, provider))
 
             resource.start()
+
+            # TODO: A patchy way to fix a timing bug that sometimes occur and causes the program to hang (reproduciton: 'Hello, world' -> [print, print &]' ; repeat until hangs)
+
+            time.sleep(1)
 
             # Synchronous
 
