@@ -341,3 +341,9 @@ class TestPythonect(unittest.TestCase):
     def test_multi_processing_and_multi_threading(self):
 
         self.assertEqual(eval.eval('"Hello, world" -> [print, print &]', {}, {}), ['Hello, world', 'Hello, world'])
+
+    # Bug #30
+
+    def test_non_string_literals_in_list(self):
+
+        self.assertEqual(eval.eval('[1,2,3] -> _ + 1', {}, {}), [2, 3, 4])

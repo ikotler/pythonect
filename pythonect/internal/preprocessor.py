@@ -64,11 +64,15 @@ def __split(buffer):
 
     else:
 
+        last_point = -1
+
         # Multiple items
 
         for point in points:
 
-            new_buffer.append(buffer[:point])
+            new_buffer.append(buffer[last_point + 1:point])
+
+            last_point = point
 
         # Last item
 
