@@ -2,6 +2,27 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+What's New In Pythonect 0.3.1?
+==============================
+
+*Release date: 14-Jul-2012*
+
+Core and builtins
+-----------------
+
+- Issue #25: Pythonect package namespsace (when importing from Python) is polluted
+
+- Issue #26: Odd Single quote char breaks double quote String (and vice versa)
+
+- Issue #27: Multiprocessing is not working with multi-threading
+
+- Issue #28: Autoload always throws NameError regardless to the actual Exception type
+
+- Issue #29: Preprocessor breaks on a List with Function Call that contains String
+
+- Issue #30: Preprocessor incorrectly process non-String literals in List
+
+
 What's New in Pythonect 0.3?
 ============================
 
