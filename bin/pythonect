@@ -135,7 +135,7 @@ def main():
 
     if args.script:
 
-        pythonect.eval.eval(args.script.read(), {}, {})
+        pythonect.eval.eval(args.script.read().replace('\\\n', ''), {}, {})
 
         args.script.close()
 
