@@ -112,7 +112,8 @@ def main():
 
     parser = argparse.ArgumentParser(sys.argv)
 
-    parser.add_argument('script', metavar='file', nargs='?', type=argparse.FileType('rt'))
+    parser.add_argument('script', metavar='file', nargs='?', type=argparse.FileType('rt'), help='program read from script file')
+    parser.add_argument('arg', metavar='arg', nargs='*', help='arguments passed to program in sys.argv[1:]')
     parser.add_argument('--verbose', '-v', action='count', default=0)
     parser.add_argument('--version', '-V', action='version', version=banner)
 
@@ -121,6 +122,14 @@ def main():
     # Setup logging level
 
     logging.basicConfig(level=verbose_levels[args.verbose % 4], format="%(filename)10s:%(lineno)4d:%(message)s")
+
+    # Adjust sys.argv, make sys.argv[1] as sys.argv[0], sys.argv[2] as sys.argv[1] and etc.
+
+    sys.argv = sys.argv[1:]
+
+    if not sys.argv:
+
+        sys.argv = ['']
 
     # Script-mode (i.e. ./pythonect script or #!/usr/bin/env pythonect)
 
