@@ -7,6 +7,7 @@ import codeop
 import argparse
 import logging
 import os
+import atexit
 
 
 try:
@@ -48,11 +49,29 @@ class PythonectCommandCompiler(codeop.CommandCompiler):
 
 class PythonectInteractiveConsole(code.InteractiveConsole):
 
-    def __init__(self, locals=None):
+    def __init__(self, locals=None, histfile=os.path.expanduser("~/.pythonect_history")):
 
         code.InteractiveConsole.__init__(self, locals)
 
         self.compile = PythonectCommandCompiler()
+
+        self.init_history(histfile)
+
+    def init_history(self, histfile):
+
+        try:
+
+            readline.read_history_file(histfile)
+
+        except IOError:
+
+            pass
+
+        atexit.register(self.save_history, histfile)
+
+    def save_history(self, histfile):
+
+        readline.write_history_file(histfile)
 
     # This is a cut & paste from /usr/lib/python2.7/code.py
     # Except we're not calling `exec` statement
