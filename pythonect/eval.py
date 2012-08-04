@@ -310,7 +310,15 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
                     resource.start()
 
-                    resources.append(resource)
+                    # Synchronous
+
+                    if operator == '|':
+
+                        resource.join()
+
+                    else:
+
+                        resources.append(resource)
 
                 else:
 
@@ -345,6 +353,8 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
             else:
 
                 return_value_queue.put((output, __pickable_dict(globals_), __pickable_dict(locals_)))
+
+        # Asynchronous
 
         for resource in resources:
 
