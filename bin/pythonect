@@ -19,7 +19,7 @@ except ImportError:
     sys.exc_clear()
 
 
-import pythonect.eval
+import pythonect
 
 
 # Pythonect Console
@@ -80,7 +80,7 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
         try:
 
-            return_value = pythonect.eval.eval(code_, {}, self.locals)
+            return_value = pythonect.eval(code_, {}, self.locals)
 
             # Meaningful Return Value?
 
@@ -154,7 +154,7 @@ def main():
 
     if args.script:
 
-        pythonect.eval.eval(args.script.read().replace('\\\n', ''), {}, {})
+        pythonect.eval(args.script.read().replace('\\\n', ''), {}, {})
 
         args.script.close()
 

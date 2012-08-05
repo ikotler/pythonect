@@ -17,3 +17,16 @@ except ImportError, e:
     # Clean up namespace
 
     del e, get_version, internal
+
+
+# API
+
+try:
+
+    from internal.eval import eval
+
+except ImportError, e:
+
+    # When imported by setup.py, it's expected that not all the dependencies will be there
+
+    pass

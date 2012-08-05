@@ -11,7 +11,7 @@ import time
 
 # Local imports
 
-import internal.parser
+import parser
 import lang
 
 
@@ -442,7 +442,7 @@ def eval(source, globals_, locals_):
 
         # Parse Pythonect
 
-        parser = internal.parser.Parser()
+        p = parser.Parser()
 
         # Extend Python's __builtin__ with Pythonect's `lang`
 
@@ -456,7 +456,7 @@ def eval(source, globals_, locals_):
 
         # Iterate Pythonect program
 
-        for expression in parser.parse(source):
+        for expression in p.parse(source):
 
             # Execute Pythonect expression
 
