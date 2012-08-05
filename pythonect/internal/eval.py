@@ -424,6 +424,11 @@ def __merge_all_globals_and_locals(current_globals, current_locals, globals_list
     return __merge_all_globals_and_locals(current_globals, current_locals, globals_list, ignore_globals_keys, locals_list, ignore_locals_keys)
 
 
+def split(s):
+
+    return parser.Parser().parse(s)
+
+
 def eval(source, globals_, locals_):
 
     return_value = None
@@ -440,9 +445,13 @@ def eval(source, globals_, locals_):
 
         waiting_list = []
 
-        # Parse Pythonect
+        if isinstance(source, list):
 
-        p = parser.Parser()
+            expressions = source
+
+        else:
+
+            expressions = split(source)
 
         # Extend Python's __builtin__ with Pythonect's `lang`
 
@@ -456,7 +465,7 @@ def eval(source, globals_, locals_):
 
         # Iterate Pythonect program
 
-        for expression in p.parse(source):
+        for expression in expressions:
 
             # Execute Pythonect expression
 

@@ -239,13 +239,15 @@ def preprocessor(buffer, stmt_as_is, tries=0):
     # PYTHONECT #
     #############
 
-    except Exception, e:
+    except SyntaxError:
 
         # Maximum two passes
 
         if tries == 2:
 
-            raise e
+            # AS IT IS (Assume it's expression)
+
+            return ('PYTHON_EXPRESSION', buffer)
 
     # Multi items preprocessing
 

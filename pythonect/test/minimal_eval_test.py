@@ -347,3 +347,11 @@ class TestPythonect(unittest.TestCase):
     def test_non_string_literals_in_list(self):
 
         self.assertEqual(internal.eval.eval('[1,2,3] -> _ + 1', {}, {}), [2, 3, 4])
+
+    # Feature #35
+
+    def test_eval_with_expressions_list_as_input(self):
+
+        expressions = internal.eval.split('"Hello, world" -> 1 | 2')
+
+        self.assertEqual(internal.eval.eval(expressions, {}, {}), 2)
