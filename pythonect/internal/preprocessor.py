@@ -9,6 +9,9 @@ import codegen
 import parser
 
 
+SUB_EXPRESSION = re.compile("`(?P<sub_expr>.*)`")
+
+
 def __expr_list_to_str(expr_list):
 
     if not expr_list[1:]:
@@ -130,16 +133,21 @@ def __scope(buffer):
 
 def preprocessor(buffer, stmt_as_is, tries=0):
 
-    new_buffer = buffer
-
     # Preprocessing Algorithm:
     # ------------------------
+    # For each `` replace with __builtins__.expr()
     # For each *python* expression, return python expression
     # For each *python* statement, return python statement
     # For each item in [], preprocess item (recursive)
     # For each item in (), preprocess item (recursive)
     # For each function address, preprocess function_address, return __builtins__.remotefunction()
     # For each trailing &, return __builtins__.attributedcode()
+
+    # `ABC` to __builtins__.expr('ABC')
+
+    buffer = SUB_EXPRESSION.sub("__builtins__.expr(\'\g<sub_expr>\')(globals(), locals())", buffer)
+
+    new_buffer = buffer
 
     ##########
     # PYTHON #

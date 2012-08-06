@@ -24,6 +24,10 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(internal.eval.eval('0x01', {}, {}), 1)
 
+    def test_sub_expr_literal_hex(self):
+
+        self.assertEqual(internal.eval.eval('`0x01`', {}, {}), 1)
+
     def test_literal_bin(self):
 
         self.assertEqual(internal.eval.eval('0b1', {}, {}), 1)
@@ -40,17 +44,33 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(internal.eval.eval('import math', {}, {}), self.input)
 
+    def test_sub_expr_python_stmt_import(self):
+
+        self.assertEqual(internal.eval.eval('`import math`', {}, {}), self.input)
+
     def test_python_stmt_assignment(self):
 
         self.assertEqual(internal.eval.eval('x = 1', {}, {}), self.input)
+
+    def test_sub_expr_python_stmt_assignment(self):
+
+        self.assertEqual(internal.eval.eval('`x = 1`', {}, {}), self.input)
 
     def test_python_expr_int(self):
 
         self.assertEqual(internal.eval.eval('1 + 1', {}, {}), 2)
 
+    def test_sub_expr_python_expr_int(self):
+
+        self.assertEqual(internal.eval.eval('`1 + 1`', {}, {}), 2)
+
     def test_python_expr_str_1(self):
 
         self.assertEqual(internal.eval.eval('"Hello World"', {}, {}), "Hello World")
+
+    def test_sub_expr_python_expr_str_1(self):
+
+        self.assertEqual(internal.eval.eval('`"Hello World"`', {}, {}), "Hello World")
 
     def test_python_expr_str_2(self):
 
@@ -68,9 +88,17 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(internal.eval.eval('[[1, 2, 3]]', {}, {}), [1, 2, 3])
 
+    def test_sub_expr_python_expr_list(self):
+
+        self.assertEqual(internal.eval.eval('`[[1, 2, 3]]`', {}, {}), [1, 2, 3])
+
     def test_python_true_expr_literal_eq_literal(self):
 
         self.assertEqual(internal.eval.eval('1 == 1', {}, {}), self.input)
+
+    def test_sub_expr_python_true_expr_literal_eq_literal(self):
+
+        self.assertEqual(internal.eval.eval('`1 == 1`', {}, {}), self.input)
 
     def test_python_false_expr_literal_neq_literal(self):
 
