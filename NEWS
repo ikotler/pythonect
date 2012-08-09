@@ -2,6 +2,34 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+What's New In Pythonect 0.4?
+============================
+
+*Release date: 09-Aug-2012*
+
+Core and builtins
+-----------------
+
+- Issue #31: Synchronous/Asynchronous is not enforced when execution return value is callable and iterable
+
+- Issue #32: Script can't accept command line args
+
+- Issue #34: Script file can't contain Backslash
+
+- Feature #34: Interpreter (in Interactive mode) now logs commands for further use
+
+- Feature #35: Pythonect module now exports split() function to parse Pythonect code
+
+- Feature #36: Backticks can be used to evaluate a Pythonect expression
+
+Miscellaneous
+-------------
+
+- Removed eXecute bit from pythonect/__init__.py and pythonect/internal/__init__.py
+
+- Reorganized Pythonect module structure (pythonect.eval.eval is now pythonect.eval)
+
+
 What's New In Pythonect 0.3.1?
 ==============================
 
