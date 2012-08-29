@@ -34,7 +34,7 @@ def get_version():
 
                     version = version + '.post' + git_ver.group('POST')
 
-    except Exception, e:
+    except Exception as e:
 
         pass
 
