@@ -12,10 +12,10 @@ import preprocessor
 ########
 
 tokens = [
-        'PYTHON_STATEMENT',
-        'PYTHON_EXPRESSION',
-        'OPERATOR',
-        'COMMA'
+    'PYTHON_STATEMENT',
+    'PYTHON_EXPRESSION',
+    'OPERATOR',
+    'COMMA'
 ]
 
 
