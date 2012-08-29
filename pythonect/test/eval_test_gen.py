@@ -14,29 +14,29 @@ sys.path.append(os.path.abspath('../'))
 import internal.eval as eval
 
 
-ATOM = [ \
-        ('literal_underscore', '_'),
-        ('literal_true_expr', '1 == 1'),
-        ('literal_false_expr', '1 != 1'),
-        ('literal_int', '1'),
-        ('literal_float', '0.5'),
-        ('literal_string', '\"foobar\"'),
-        ('literal_true', 'True'),
-        ('literal_false', 'False'),
-        ('literal_none', 'None'),
-        ('import_stmt', 'import math'),
-        ('assignment_stmt', 'x = 0'),
-        ('python_expr', '1+1'),
-        ('pythonect_expr', '$[1->1]')
-        ]
+ATOM = [
+    ('literal_underscore', '_'),
+    ('literal_true_expr', '1 == 1'),
+    ('literal_false_expr', '1 != 1'),
+    ('literal_int', '1'),
+    ('literal_float', '0.5'),
+    ('literal_string', '\"foobar\"'),
+    ('literal_true', 'True'),
+    ('literal_false', 'False'),
+    ('literal_none', 'None'),
+    ('import_stmt', 'import math'),
+    ('assignment_stmt', 'x = 0'),
+    ('python_expr', '1+1'),
+    ('pythonect_expr', '$[1->1]')
+]
 
 
-OPERATOR = [ \
-        (None, None),
-        ('comma', ','),
-        ('async', '->'),
-        ('sync', '|')
-        ]
+OPERATOR = [
+    (None, None),
+    ('comma', ','),
+    ('async', '->'),
+    ('sync', '|')
+]
 
 
 # ATOM OPERATOR ATOM OPERATOR ATOM
@@ -103,7 +103,7 @@ def main():
         try:
 
             print '\tdef test_%s(self):\n\n\t\tself.assertEqual( eval.eval(\'%s\', {}, {}) , %s )\n' % \
-                    ('_'.join(name), ' '.join(expr), __type_wrapper(eval.eval(' '.join(expr), {}, {})))
+                ('_'.join(name), ' '.join(expr), __type_wrapper(eval.eval(' '.join(expr), {}, {})))
 
         except Exception as e:
 
