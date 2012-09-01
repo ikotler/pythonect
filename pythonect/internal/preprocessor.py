@@ -351,7 +351,17 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
         # Assume new_buffer is from PYTHON_EXPRESSION
 
-        new_buffer = '__builtins__.attributedcode("(operator, \'%s\')", "(iterate_literal_arrays, multiprocessing.Process, multiprocessing.Queue)")' % actual_buffer[1]
+        try:
+
+            import multiprocessing
+
+            new_buffer = '__builtins__.attributedcode("(operator, \'%s\')", "(iterate_literal_arrays, multiprocessing.Process, multiprocessing.Queue)")' % actual_buffer[1]
+
+        except ImportError:
+
+            # Don't break syntax due to missing multiprocessing, use Threads if applicable.
+
+            pass
 
     # Try again!
 

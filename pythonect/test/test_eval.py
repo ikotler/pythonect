@@ -10,6 +10,19 @@ import sys
 import pythonect
 
 
+def _installed_module(name):
+
+    try:
+
+        __import__(name)
+
+        return True
+
+    except ImportError:
+
+        return False
+
+
 class TestPythonect(unittest.TestCase):
 
     def setUp(self):
@@ -274,16 +287,19 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
+    @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multithread_program_sync(self):
 
         r_array = pythonect.eval('import threading | [threading.current_thread().name, threading.current_thread().name]', {}, {})
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
+    @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multiprocess_program_async(self):
 
         self.assertEqual(pythonect.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', {}, {}), 1)
 
+    @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multiprocess_program_sync(self):
 
         self.assertEqual(pythonect.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
@@ -362,6 +378,7 @@ class TestPythonect(unittest.TestCase):
 
     # Bug #27
 
+    @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multi_processing_and_multi_threading(self):
 
         self.assertEqual(pythonect.eval('"Hello, world" -> [print, print &]', {}, {}), ['Hello, world', 'Hello, world'])

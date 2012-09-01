@@ -4,9 +4,19 @@ import threading
 import copy
 import logging
 import importlib
-import multiprocessing
 import types
 import time
+
+
+try:
+
+    import multiprocessing
+
+except ImportError:
+
+    # TODO: Warn that Current Python implementation does not support Multiprocessing
+
+    pass
 
 
 # Local imports

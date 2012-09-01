@@ -7,8 +7,6 @@ import __builtin__
 
 def print_(object):
 
-    import multiprocessing
-
     import threading
 
     import sys
@@ -17,13 +15,21 @@ def print_(object):
 
     __builtin__.__GIL__.acquire()
 
-    if multiprocessing.current_process().name == 'MainProcess':
+    try:
 
-        sys.stdout.write("<%s:%s> : %s\n" % (multiprocessing.current_process().name, threading.current_thread().name, object))
+        import multiprocessing
 
-    else:
+        if multiprocessing.current_process().name == 'MainProcess':
 
-        sys.stdout.write("<PID #%d> : %s\n" % (multiprocessing.current_process().pid, object))
+            sys.stdout.write("<%s:%s> : %s\n" % (multiprocessing.current_process().name, threading.current_thread().name, object))
+
+        else:
+
+            sys.stdout.write("<PID #%d> : %s\n" % (multiprocessing.current_process().pid, object))
+
+    except ImportError:
+
+            sys.stdout.write("<%s> : %s\n" % (threading.current_thread().name, object))
 
     sys.stdout.flush()
 
