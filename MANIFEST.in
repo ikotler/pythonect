@@ -1,2 +1,1 @@
-include bin/pythonect README.rst LICENSE AUTHORS NEWS
-exclude .gitignore
+include bin/pythonect README.rst LICENSE NEWS
