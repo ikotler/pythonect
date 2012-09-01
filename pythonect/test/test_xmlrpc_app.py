@@ -11,14 +11,9 @@ import os
 import sys
 
 
-# Add `internal` directory (i.e. ../) to sys.path
-
-sys.path.append(os.path.abspath('../'))
-
-
 # Local imports
 
-import internal.eval
+import pythonect
 
 
 ## {{{ http://code.activestate.com/recipes/520583/ (r1)
@@ -104,56 +99,56 @@ class TestPythonectRemoting(unittest.TestCase):
 
     def test_int_async_remotefunction_const_host(self):
 
-        self.assertEqual(internal.eval.eval('1 -> inc@xmlrpc://localhost:8000', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 -> inc@xmlrpc://localhost:8000', {}, {}), 2)
 
     def test_int_sync_remotefunction_const_host(self):
 
-        self.assertEqual(internal.eval.eval('1 | inc@xmlrpc://localhost:8000', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 | inc@xmlrpc://localhost:8000', {}, {}), 2)
 
     def test_int_async_remotefunction_with_args_const_host(self):
 
-        self.assertEqual(internal.eval.eval('1 -> inc(1)@xmlrpc://localhost:8000', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 -> inc(1)@xmlrpc://localhost:8000', {}, {}), 2)
 
     def test_int_sync_remotefunction_with_args_const_host(self):
 
-        self.assertEqual(internal.eval.eval('1 | inc(1)@xmlrpc://localhost:8000', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 | inc(1)@xmlrpc://localhost:8000', {}, {}), 2)
 
     def test_int_async_remotefunction_literal_expr(self):
 
-        self.assertEqual(internal.eval.eval('1 -> inc@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 -> inc@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
 
     def test_int_sync_remotefunction_literal_expr(self):
 
-        self.assertEqual(internal.eval.eval('1 | inc@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 | inc@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
 
     def test_int_async_remotefunction_with_args_literal_expr(self):
 
-        self.assertEqual(internal.eval.eval('1 -> inc(1)@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 -> inc(1)@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
 
     def test_int_sync_remotefunction_with_args_literal_expr(self):
 
-        self.assertEqual(internal.eval.eval('1 | inc(1)@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 | inc(1)@"xmlrpc://" + "localhost:8000"', {}, {}), 2)
 
     def test_int_async_remotefunction_expr(self):
 
-        self.assertEqual(internal.eval.eval('[host = "localhost"] -> 1 -> inc@"xmlrpc://" + host + ":8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('[host = "localhost"] -> 1 -> inc@"xmlrpc://" + host + ":8000"', {}, {}), 2)
 
     def test_int_sync_remotefunction_expr(self):
 
-        self.assertEqual(internal.eval.eval('[host = "localhost"] -> 1 | inc@"xmlrpc://" + host + ":8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('[host = "localhost"] -> 1 | inc@"xmlrpc://" + host + ":8000"', {}, {}), 2)
 
     def test_int_async_remotefunction_with_args_expr(self):
 
-        self.assertEqual(internal.eval.eval('[host = "localhost"] -> 1 -> inc(1)@"xmlrpc://" + host + ":8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('[host = "localhost"] -> 1 -> inc(1)@"xmlrpc://" + host + ":8000"', {}, {}), 2)
 
     def test_int_sync_remotefunction_with_args_expr(self):
 
-        self.assertEqual(internal.eval.eval('[host = "localhost"] -> 1 | inc(1)@"xmlrpc://" + host + ":8000"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('[host = "localhost"] -> 1 | inc(1)@"xmlrpc://" + host + ":8000"', {}, {}), 2)
 
 # Standard XML-RPC does not support **kwargs
 
 #       def test_int_async_remotefunction_with_kwargs(self):
-#               self.assertEqual( internal.eval.eval('1 -> inc(x=1)@xmlrpc://localhost:8000', {}, {}) , 2 )
+#               self.assertEqual( pythonect.eval('1 -> inc(x=1)@xmlrpc://localhost:8000', {}, {}) , 2 )
 
 #       def test_int_sync_remotefunction_with_kwargs(self):
-#               self.assertEqual( internal.eval.eval('1 | inc(x=1)@xmlrpc://localhost:8000', {}, {}) , 2 )
+#               self.assertEqual( pythonect.eval('1 | inc(x=1)@xmlrpc://localhost:8000', {}, {}) , 2 )

@@ -59,7 +59,9 @@ if __name__ == "__main__":
 
         install_requires=['ply>=3.4'],
 
-        cmdclass={'build': Build}
+        cmdclass={'build': Build},
+
+        test_suite='pythonect.test.get_tests'
     )
 
     setuptools.setup(**setupconf)

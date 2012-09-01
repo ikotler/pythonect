@@ -5,21 +5,16 @@ import os
 import sys
 
 
-# Add `internal` directory (i.e. ../) to sys.path
-
-sys.path.append(os.path.abspath('../'))
-
-
 # Local imports
 
-import internal.parser
+import pythonect.internal.parser
 
 
 class TestPythonectParser(unittest.TestCase):
 
     def setUp(self):
 
-        self.parser = internal.parser.Parser()
+        self.parser = pythonect.internal.parser.Parser()
 
     def test_program_empty(self):
 
