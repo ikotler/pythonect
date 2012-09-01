@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath('../'))
 
 # Local imports
 
-import eval
+import internal.eval
 
 
 ATOM = [ \
@@ -102,8 +102,8 @@ def main():
 
         try:
 
-            print '\tdef test_%s(self):\n\n\t\tself.assertEqual( eval.eval(\'%s\', {}, {}) , %s )\n' % \
-                    ('_'.join(name), ' '.join(expr), __type_wrapper(eval.eval(' '.join(expr), {}, {})))
+            print '\tdef test_%s(self):\n\n\t\tself.assertEqual( internal.eval.eval(\'%s\', {}, {}) , %s )\n' % \
+                    ('_'.join(name), ' '.join(expr), __type_wrapper(internal.eval.eval(' '.join(expr), {}, {})))
 
         except Exception, e:
 
