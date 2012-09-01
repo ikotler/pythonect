@@ -1,3 +1,5 @@
+"""Parse and execute Pythonect code"""
+
 # Version
 
 try:

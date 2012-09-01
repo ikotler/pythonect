@@ -425,11 +425,36 @@ def __merge_all_globals_and_locals(current_globals, current_locals, globals_list
 
 
 def parse(source):
+    """Parse the source into a tree (i.e. list of list).
+
+    Args:
+        source: A string representing a Pythonect code.
+
+    Returns:
+        A tree (i.e. list of list) of Pythonect symbols.
+
+    Raises:
+        SyntaxError: An error occurred parsing the code.
+    """
 
     return parser.Parser().parse(source)
 
 
 def eval(source, globals_, locals_):
+    """Evaluate Pythonect code in the context of globals and locals.
+
+    Args:
+        source: A string representing a Pythonect code or a tree as
+            returned by parse()
+        globals: A dictionary.
+        locals: Any mapping.
+
+    Returns:
+        The return value is the result of the evaluated code.
+
+    Raises:
+        SyntaxError: An error occurred parsing the code.
+    """
 
     return_value = None
 
