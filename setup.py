@@ -37,31 +37,29 @@ class Build(distutils.command.build.build):
 if __name__ == "__main__":
 
     setupconf = dict(
-            name='Pythonect',
-            version=pythonect.__version__,
-            author='Itzik Kotler',
-            author_email='xorninja@gmail.com',
-            url='http://www.pythonect.org/',
-            license='BSD',
-            description='A general-purpose dataflow programming language based on Python, written in Python',
+        name='Pythonect',
+        version=pythonect.__version__,
+        author='Itzik Kotler',
+        author_email='xorninja@gmail.com',
+        url='http://www.pythonect.org/',
+        license='BSD',
+        description='A general-purpose dataflow programming language based on Python, written in Python',
 
-            long_description=open('README.rst').read(),
+        long_description=open('README.rst').read(),
+        scripts=['bin/pythonect'],
+        packages=setuptools.find_packages(),
 
-            scripts=['bin/pythonect'],
+        classifiers=[
+            'Development Status :: 4 - Beta',
+            'License :: OSI Approved :: BSD License',
+            'Operating System :: OS Independent',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 2.7',
+        ],
 
-            packages=setuptools.find_packages(),
+        install_requires=['ply>=3.4'],
 
-            classifiers=['Development Status :: 4 - Beta',
-                         'License :: OSI Approved :: BSD License',
-                         'Operating System :: OS Independent',
-                         'Programming Language :: Python',
-                         'Programming Language :: Python :: 2.7',
-            ],
-
-            install_requires=['ply>=3.4'],
-
-            cmdclass={'build': Build}
-
+        cmdclass={'build': Build}
     )
 
     setuptools.setup(**setupconf)
