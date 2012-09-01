@@ -380,6 +380,6 @@ class TestPythonect(unittest.TestCase):
 
     def test_eval_with_expressions_list_as_input(self):
 
-        expressions = internal.eval.split('"Hello, world" -> 1 | 2')
+        expressions = internal.eval.parse('"Hello, world" -> 1 | 2')
 
         self.assertEqual(internal.eval.eval(expressions, {}, {}), 2)

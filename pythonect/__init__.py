@@ -23,7 +23,7 @@ except ImportError, e:
 
 try:
 
-    from internal.eval import eval, split
+    from internal.eval import eval, parse
 
 except ImportError, e:
 

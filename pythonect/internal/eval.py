@@ -424,9 +424,9 @@ def __merge_all_globals_and_locals(current_globals, current_locals, globals_list
     return __merge_all_globals_and_locals(current_globals, current_locals, globals_list, ignore_globals_keys, locals_list, ignore_locals_keys)
 
 
-def split(s):
+def parse(source):
 
-    return parser.Parser().parse(s)
+    return parser.Parser().parse(source)
 
 
 def eval(source, globals_, locals_):
@@ -451,7 +451,7 @@ def eval(source, globals_, locals_):
 
         else:
 
-            expressions = split(source)
+            expressions = parse(source)
 
         # Extend Python's __builtin__ with Pythonect's `lang`
 
