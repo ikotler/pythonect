@@ -272,6 +272,24 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
             ignore_iterables = [str, unicode, dict]
 
+        # Switch?
+
+        else:
+
+            if isinstance(output, dict):
+
+                # NOTE: Private case, dict as a start of flow
+
+                if input is not None:
+
+                    # 1 -> {1: 'One', 2: 'Two'} = 'One'
+
+                    output = output.get(input, False)
+
+                    if output is False:
+
+                        return None
+
         # Special Values
 
         if output is False:
@@ -291,16 +309,6 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
             # 1 -> None = 1
 
             output = input
-
-        if isinstance(output, dict):
-
-            # 1 -> {1: 'One', 2: 'Two'} = 'One'
-
-            output = output.get(input, False)
-
-            if output is False:
-
-                return None
 
         # `output` is array or discrete?
 

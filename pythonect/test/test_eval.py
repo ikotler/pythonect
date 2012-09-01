@@ -320,6 +320,11 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(pythonect.eval('def ret_none(): return "None" -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', {}, {}), 2)
 
+    ############################################################
+    # Ticket numbers in this file can be looked up by visiting #
+    # http://github.com/ikotler/pythonect/issues/<number>      #
+    ############################################################
+
     # Bug #11
 
     def test_autloader_within_array(self):
@@ -396,3 +401,13 @@ class TestPythonect(unittest.TestCase):
         expressions = pythonect.parse('"Hello, world" -> 1 | 2')
 
         self.assertEqual(pythonect.eval(expressions, {}, {}), 2)
+
+    # Enhancement #45
+
+    def test_literal_dict_as_input(self):
+
+        self.assertEqual(pythonect.eval('{"foobar": "foobar"}', {}, {}), {"foobar": "foobar"})
+
+    def test_dict_as_return_value_as_input(self):
+
+        self.assertEqual(pythonect.eval("def foobar(): return {'foobar': 'foobar'} -> foobar() -> print", {}, {}), {"foobar": "foobar"})
