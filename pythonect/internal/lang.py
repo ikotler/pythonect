@@ -97,7 +97,7 @@ class remotefunction(object):
 
             self.__host = eval(self.__host, globals_, locals_)
 
-        except SyntaxError, e:
+        except SyntaxError as e:
 
             # CONST? As it is
 
@@ -176,7 +176,7 @@ class stmt(object):
 
             exec self.__statement in globals_, locals_
 
-        except NameError, e:
+        except NameError as e:
 
                 try:
 
@@ -190,7 +190,7 @@ class stmt(object):
 
                     exec self.__statement in globals_, locals_
 
-                except Exception, e1:
+                except Exception as e1:
 
                     # raise original Exception
 

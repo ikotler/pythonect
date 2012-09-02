@@ -10,7 +10,7 @@ try:
 
     del _version
 
-except ImportError, e:
+except ImportError as e:
 
     from internal.version import get_version
 
@@ -27,7 +27,7 @@ try:
 
     from internal.eval import eval, parse
 
-except ImportError, e:
+except ImportError as e:
 
     # When imported by setup.py, it's expected that not all the dependencies will be there
 

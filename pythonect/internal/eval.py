@@ -38,7 +38,7 @@ def __isiter(object):
 
         return True
 
-    except TypeError, e:
+    except TypeError as e:
 
         return False
 
@@ -115,7 +115,7 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
         object_or_objects = python.eval(atom, globals_, locals_)
 
-    except NameError, e:
+    except NameError as e:
 
         try:
 
@@ -129,11 +129,11 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
             object_or_objects = python.eval(atom, globals_, locals_)
 
-        except Exception, e1:
+        except Exception as e1:
 
             raise e1
 
-    except TypeError, e:
+    except TypeError as e:
 
         # Due to eval()?
 
