@@ -49,6 +49,11 @@ For any of the above methods, if you want to do a system-wide installation, you 
 .. _PyPI: http://pypi.python.org/pypi/Pythonect/
 .. _pip: http://www.pip-installer.org/
 
+Build Status |status|
+---------------------
+
+.. |status| image:: https://secure.travis-ci.org/ikotler/pythonect.png
+
 Licensing
 ---------
 
