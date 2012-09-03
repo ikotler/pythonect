@@ -2,6 +2,40 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+What's New In Pythonect 0.4.1?
+==============================
+
+*Release date: 03-Sep-2012*
+
+Core and builtins
+-----------------
+
+- PEP8 Fixes
+
+- PEP 3110 Fixes
+
+- Added Travis CI Support
+
+- Issue #38: No docstrings for eval(), parse(), and Pythonect module
+
+- Issue #39: eval_test_gen.py fails due to incorrect import
+
+- Issue #41: Pythonect split() renamed to parse() to better fit it's purpose
+
+- Issue #42: Pythonect fails on Python implementations that do not include the multiprocessing module
+
+- Issue #44: Warnings during installation due to MANIFEST.in
+
+- Enhancement #45: Dict can now be used as a return value, only literal dict will be treated as switch
+
+- Issue #47: Pythonect parse() is not included in the testsuite
+
+Build
+-----
+
+- Issue #43: Pythonect unittest runner is not cross-platform
+
+
 What's New In Pythonect 0.4?
 ============================
 
