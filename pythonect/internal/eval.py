@@ -72,9 +72,253 @@ def __queue_to_queue(source_queue, dest_queue):
 
         pass
 
+# CHANGED: moved __eval_many out of the main __run.
+# TODO: 1. Make it work (looks like it is - clone the orig and compare the output of 
+#        "python setup.py test" to make sure) - DONE.
+#       2. Make the rest of __run into eval_single_expr
+#       3. Break into multiple functions.
+  
+
+def __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, \
+                            locals_, globals_, iterate_literal_arrays, return_value_queue, \
+                            orig_return_value_queue, resources):
+    for item in object_or_objects:
+
+        # TODO: This is a hack to prevent from item to be confused as fcn call and raise NameError.
+
+        if isinstance(item, basestring):
+
+            # i.e. [1, 'Hello'] -> eval() = [1, Hello] , this fixup Hello to be 'Hello' again
+
+            item = "'" + item + "'"
+
+        # Process? (i.e. 'Hello, world' -> [print, print &])
+
+        if isinstance(item, lang.attributedcode):
+
+            (ignored_value, new_provider, new_return_value_queue) = python.eval(item.get_attributes())
+
+            if new_provider != provider:
+
+                changed_provider = True
+
+                return_value_queue = new_return_value_queue()
+
+            provider = new_provider
+
+            # Unpack __builtins.__attributedcode()
+
+            expression = [(None, None), python.eval(item.get_expression())] + expression[1:]
+
+            # Overwrite `item` with current input
+
+            item = locals_.get('_', None)
+
+            if isinstance(item, basestring):
+
+                # i.e. [1, 'Hello'] -> eval() = [1, Hello] , this fixup Hello to be 'Hello' again
+
+                item = "'" + item + "'"
+
+        resource = provider(target=__run, args=([(operator, item)] + expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, not iterate_literal_arrays, provider))
+
+        resource.start()
+
+        # TODO: A patchy way to fix a timing bug that sometimes occur and causes the program to hang (reproduciton: 'Hello, world' -> [print, print &]' ; repeat until hangs)
+
+        time.sleep(1)
+
+        # Synchronous
+
+        if operator == '|':
+
+            resource.join()
+
+            if changed_provider:
+
+                __queue_to_queue(return_value_queue, orig_return_value_queue)
+
+        # Asynchronous
+
+        else:
+
+            resources.append(resource)
+
+    # Asynchronous
+
+    if resources:
+
+        # Wait for resources
+
+        for resource in resources:
+
+            resource.join(None)
+
+            if changed_provider:
+
+                __queue_to_queue(return_value_queue, orig_return_value_queue)
+                
+    #TODO: do we need to return? (I think not, but make sure). 
+
+
+def __eval_single_object(object_or_objects, operator, provider, changed_provider, expression, \
+                           locals_, globals_, return_value_queue, orig_return_value_queue, resources):
+                           
+    # Get current input
+
+    input = locals_.get('_', None)
+
+    if input is None:
+
+        input = globals_.get('_', None)
+
+    ####################################################
+    # `output` = `input` applied on `object_or_objects`#
+    ####################################################
+
+    # Assume `object_or_objects` is literal (i.e. object_or_objects override input)
+
+    output = object_or_objects
+
+    # Instance? (e.g. function, instance of class that implements __call__)
+
+    if callable(output):
+
+        # Remote?
+
+        if isinstance(output, lang.remotefunction):
+
+            output.evaluate_host(globals_, locals_)
+
+        # Python Statement?
+
+        if isinstance(output, (lang.stmt, lang.expr)):
+
+            output = output(globals_, locals_)
+
+        else:
+
+            output = output(input)
+
+        # Reset `ignore_iterables` if callable(), thus allowing a function return value to be iterated
+
+        ignore_iterables = [str, unicode, dict]
+
+    # Switch?
+
+    else:
+
+        if isinstance(output, dict):
+
+            # NOTE: Private case, dict as a start of flow
+
+            if input is not None:
+
+                # 1 -> {1: 'One', 2: 'Two'} = 'One'
+
+                output = output.get(input, False)
+
+                if output is False:
+
+                    return None
+
+    # Special Values
+
+    if output is False:
+
+        # 1 -> False = <Terminate resource>
+
+        return None
+
+    if output is True:
+
+        # 1 -> True = 1
+
+        output = input
+
+    if output is None:
+
+        # 1 -> None = 1
+
+        output = input
+
+    # `output` is array or discrete?
+
+    if not isinstance(output, tuple(ignore_iterables)) and __isiter(output):
+
+        # Iterate `output`
+
+        for item in output:
+
+            globals_['_'] = locals_['_'] = item
+
+            if expression[1:]:
+
+                # Call next atom in expression with `item` as `input`
+
+                resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True, provider))
+
+                resource.start()
+
+                # Synchronous
+
+                if operator == '|':
+
+                    resource.join()
+
+                else:
+
+                    resources.append(resource)
+
+            else:
+
+                return_value_queue.put((item, globals_, locals_))
+
+    else:
+
+        # Same resource, next atom
+
+        globals_['_'] = locals_['_'] = output
+
+        if expression[1:]:
+
+            # If Thread, use the same thread, If Process, spawn a new one
+
+            if provider == threading.Thread:
+
+                # Call next atom in expression with `output` as `input`
+
+                __run(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True)
+
+            else:
+
+                # Process
+
+                resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True))
+
+                resource.start()
+
+                resources.append(resource)
+
+        else:
+
+            return_value_queue.put((output, __pickable_dict(globals_), __pickable_dict(locals_)))
+
+    # Asynchronous
+
+    for resource in resources:
+
+        resource.join(None)
+
+        if changed_provider:
+
+            __queue_to_queue(return_value_queue, orig_return_value_queue)
+
 
 def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arrays, provider=threading.Thread):
-
+    
+    #Setup
+    
     resources = []
 
     (operator, atom) = expression[0]
@@ -83,8 +327,16 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
     orig_return_value_queue = return_value_queue
 
+    ignore_iterables = [str, unicode, dict]
+
+    if not iterate_literal_arrays:
+
+        ignore_iterables = ignore_iterables + [list, tuple]
+
     # Thread or Process?
 
+########################################################################################
+#TODO: export to function
     if expression[1:] and expression[1][1].startswith('__builtins__.attributedcode'):
 
         future_object = python.eval(expression[1][1], globals_, locals_)
@@ -102,13 +354,8 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
         # Unpack __builtins.__attributedcode()
 
         expression[1] = python.eval(future_object.get_expression())
-
-    ignore_iterables = [str, unicode, dict]
-
-    if not iterate_literal_arrays:
-
-        ignore_iterables = ignore_iterables + [list, tuple]
-
+########################################################################################
+#TODO - export to function
     # TODO: This is a hack to support instances, should be re-written. If atom is `literal` or `instance`, it should appear as a metadata/attribute
 
     try:
@@ -144,244 +391,28 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
         else:
 
             raise e
+########################################################################################
 
     # [1,2,3] -> [a,b,c] =
     #       Thread 1: 1 -> [a,b,c]
     #       Thread 2: 2 -> [a,b,c]
     #       ...
-
+    
     if not isinstance(object_or_objects, tuple(ignore_iterables)) and __isiter(object_or_objects):
+        
+        __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, locals_, globals_, \
+                iterate_literal_arrays, return_value_queue, orig_return_value_queue, resources)
 
-        for item in object_or_objects:
-
-            # TODO: This is a hack to prevent from item to be confused as fcn call and raise NameError.
-
-            if isinstance(item, basestring):
-
-                # i.e. [1, 'Hello'] -> eval() = [1, Hello] , this fixup Hello to be 'Hello' again
-
-                item = "'" + item + "'"
-
-            # Process? (i.e. 'Hello, world' -> [print, print &])
-
-            if isinstance(item, lang.attributedcode):
-
-                (ignored_value, new_provider, new_return_value_queue) = python.eval(item.get_attributes())
-
-                if new_provider != provider:
-
-                    changed_provider = True
-
-                    return_value_queue = new_return_value_queue()
-
-                provider = new_provider
-
-                # Unpack __builtins.__attributedcode()
-
-                expression = [(None, None), python.eval(item.get_expression())] + expression[1:]
-
-                # Overwrite `item` with current input
-
-                item = locals_.get('_', None)
-
-                if isinstance(item, basestring):
-
-                    # i.e. [1, 'Hello'] -> eval() = [1, Hello] , this fixup Hello to be 'Hello' again
-
-                    item = "'" + item + "'"
-
-            resource = provider(target=__run, args=([(operator, item)] + expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, not iterate_literal_arrays, provider))
-
-            resource.start()
-
-            # TODO: A patchy way to fix a timing bug that sometimes occur and causes the program to hang (reproduciton: 'Hello, world' -> [print, print &]' ; repeat until hangs)
-
-            time.sleep(1)
-
-            # Synchronous
-
-            if operator == '|':
-
-                resource.join()
-
-                if changed_provider:
-
-                    __queue_to_queue(return_value_queue, orig_return_value_queue)
-
-            # Asynchronous
-
-            else:
-
-                resources.append(resource)
-
-        # Asynchronous
-
-        if resources:
-
-            # Wait for resources
-
-            for resource in resources:
-
-                resource.join(None)
-
-                if changed_provider:
-
-                    __queue_to_queue(return_value_queue, orig_return_value_queue)
-
+########################################################################################
+#TODO - export to function
+        
     # 1 -> [a,b,c]
 
     else:
-
-        # Get current input
-
-        input = locals_.get('_', None)
-
-        if input is None:
-
-            input = globals_.get('_', None)
-
-        ####################################################
-        # `output` = `input` applied on `object_or_objects`#
-        ####################################################
-
-        # Assume `object_or_objects` is literal (i.e. object_or_objects override input)
-
-        output = object_or_objects
-
-        # Instance? (e.g. function, instance of class that implements __call__)
-
-        if callable(output):
-
-            # Remote?
-
-            if isinstance(output, lang.remotefunction):
-
-                output.evaluate_host(globals_, locals_)
-
-            # Python Statement?
-
-            if isinstance(output, (lang.stmt, lang.expr)):
-
-                output = output(globals_, locals_)
-
-            else:
-
-                output = output(input)
-
-            # Reset `ignore_iterables` if callable(), thus allowing a function return value to be iterated
-
-            ignore_iterables = [str, unicode, dict]
-
-        # Switch?
-
-        else:
-
-            if isinstance(output, dict):
-
-                # NOTE: Private case, dict as a start of flow
-
-                if input is not None:
-
-                    # 1 -> {1: 'One', 2: 'Two'} = 'One'
-
-                    output = output.get(input, False)
-
-                    if output is False:
-
-                        return None
-
-        # Special Values
-
-        if output is False:
-
-            # 1 -> False = <Terminate resource>
-
-            return None
-
-        if output is True:
-
-            # 1 -> True = 1
-
-            output = input
-
-        if output is None:
-
-            # 1 -> None = 1
-
-            output = input
-
-        # `output` is array or discrete?
-
-        if not isinstance(output, tuple(ignore_iterables)) and __isiter(output):
-
-            # Iterate `output`
-
-            for item in output:
-
-                globals_['_'] = locals_['_'] = item
-
-                if expression[1:]:
-
-                    # Call next atom in expression with `item` as `input`
-
-                    resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True, provider))
-
-                    resource.start()
-
-                    # Synchronous
-
-                    if operator == '|':
-
-                        resource.join()
-
-                    else:
-
-                        resources.append(resource)
-
-                else:
-
-                    return_value_queue.put((item, globals_, locals_))
-
-        else:
-
-            # Same resource, next atom
-
-            globals_['_'] = locals_['_'] = output
-
-            if expression[1:]:
-
-                # If Thread, use the same thread, If Process, spawn a new one
-
-                if provider == threading.Thread:
-
-                    # Call next atom in expression with `output` as `input`
-
-                    __run(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True)
-
-                else:
-
-                    # Process
-
-                    resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True))
-
-                    resource.start()
-
-                    resources.append(resource)
-
-            else:
-
-                return_value_queue.put((output, __pickable_dict(globals_), __pickable_dict(locals_)))
-
-        # Asynchronous
-
-        for resource in resources:
-
-            resource.join(None)
-
-            if changed_provider:
-
-                __queue_to_queue(return_value_queue, orig_return_value_queue)
-
+        
+        __eval_single_object(object_or_objects, operator, provider, changed_provider, expression, \
+                           locals_, globals_, return_value_queue, orig_return_value_queue, resources)
+    
 
 def __extend_builtins(globals_):
 
