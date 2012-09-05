@@ -73,15 +73,16 @@ def __queue_to_queue(source_queue, dest_queue):
         pass
 
 # CHANGED: moved __eval_many out of the main __run.
-# TODO: 1. Make it work (looks like it is - clone the orig and compare the output of 
+# TODO: 1. Make it work (looks like it is - clone the orig and compare the output of
 #        "python setup.py test" to make sure) - DONE.
 #       2. Make the rest of __run into eval_single_expr
 #       3. Break into multiple functions.
-  
 
-def __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, \
-                            locals_, globals_, iterate_literal_arrays, return_value_queue, \
+
+def __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression,
+                            locals_, globals_, iterate_literal_arrays, return_value_queue,
                             orig_return_value_queue, resources):
+
     for item in object_or_objects:
 
         # TODO: This is a hack to prevent from item to be confused as fcn call and raise NameError.
@@ -157,14 +158,14 @@ def __eval_multiple_objects(object_or_objects, operator, provider, changed_provi
             if changed_provider:
 
                 __queue_to_queue(return_value_queue, orig_return_value_queue)
-                
-    #TODO: do we need to return? (I think not, but make sure). 
+
+    #TODO: do we need to return? (I think not, but make sure).
 
 
-def __eval_single_object(object_or_objects, operator, provider, changed_provider, expression, \
-                           locals_, globals_, return_value_queue, orig_return_value_queue, \
-                           ignore_iterables, resources):
-                           
+def __eval_single_object(object_or_objects, operator, provider, changed_provider, expression,
+                         locals_, globals_, return_value_queue, orig_return_value_queue,
+                         ignore_iterables, resources):
+
     # Get current input
 
     input = locals_.get('_', None)
@@ -317,12 +318,12 @@ def __eval_single_object(object_or_objects, operator, provider, changed_provider
 
 
 def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arrays, provider=threading.Thread):
-    
+
     ##GUY - DEBUG
     #print 'Entering __run: expression = %s' %(expression)
-    
+
     #Setup
-    
+
     resources = []
 
     (operator, atom) = expression[0]
@@ -401,23 +402,23 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
     #       Thread 1: 1 -> [a,b,c]
     #       Thread 2: 2 -> [a,b,c]
     #       ...
-    
+
     if not isinstance(object_or_objects, tuple(ignore_iterables)) and __isiter(object_or_objects):
-        
-        __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, locals_, globals_, \
-                iterate_literal_arrays, return_value_queue, orig_return_value_queue, resources)
+
+        __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, locals_, globals_,
+                                iterate_literal_arrays, return_value_queue, orig_return_value_queue, resources)
 
 ########################################################################################
 #TODO - export to function
-        
+
     # 1 -> [a,b,c]
 
     else:
-        
-        __eval_single_object(object_or_objects, operator, provider, changed_provider, expression, \
-                           locals_, globals_, return_value_queue, orig_return_value_queue,\
-                           ignore_iterables, resources)
-    
+
+        __eval_single_object(object_or_objects, operator, provider, changed_provider, expression,
+                             locals_, globals_, return_value_queue, orig_return_value_queue,
+                             ignore_iterables, resources)
+
 
 def __extend_builtins(globals_):
 
