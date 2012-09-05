@@ -2,6 +2,15 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+HEAD
+====
+
+Core and builtins
+-----------------
+
+- Refactor __run()
+
+
 What's New In Pythonect 0.4.1?
 ==============================
 
@@ -24,8 +33,6 @@ Core and builtins
 
 - Issue #42: Pythonect fails on Python implementations that do not include the multiprocessing module
 
-- Issue #44: Warnings during installation due to MANIFEST.in
-
 - Enhancement #45: Dict can now be used as a return value, only literal dict will be treated as switch
 
 - Issue #47: Pythonect parse() is not included in the testsuite
@@ -34,6 +41,8 @@ Build
 -----
 
 - Issue #43: Pythonect unittest runner is not cross-platform
+
+- Issue #44: Warnings during installation due to MANIFEST.in
 
 
 What's New In Pythonect 0.4?
