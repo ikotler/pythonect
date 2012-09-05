@@ -72,17 +72,57 @@ def __queue_to_queue(source_queue, dest_queue):
 
         pass
 
-# CHANGED: moved __eval_many out of the main __run.
-# TODO: 1. Make it work (looks like it is - clone the orig and compare the output of
-#        "python setup.py test" to make sure) - DONE.
-#       2. Make the rest of __run into eval_single_expr
-#       3. Break into multiple functions.
+
+def __eval_current_atom(atom, locals_, globals_):
+
+    # TODO: This is a hack to support instances, should be re-written. If atom is `literal` or `instance`, it should appear as a metadata/attribute
+
+    try:
+
+        object_or_objects = python.eval(atom, globals_, locals_)
+
+    except NameError as e:
+
+        try:
+
+            import importlib
+
+            # NameError: name 'os' is not defined
+
+            mod_name = e.message.split()[1][1:-1]
+
+            globals_.update({mod_name: importlib.import_module(mod_name)})
+
+            object_or_objects = python.eval(atom, globals_, locals_)
+
+        except Exception as e1:
+
+            raise e1
+
+    except TypeError as e:
+
+        # Due to eval()?
+
+        if (e.message == 'eval() arg 1 must be a string or code object'):
+
+            object_or_objects = atom
+
+        else:
+
+            raise e
+    return object_or_objects
 
 
 def __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression,
                             locals_, globals_, iterate_literal_arrays, return_value_queue,
                             orig_return_value_queue, resources):
-
+    '''
+    When object_or_objects is an appropriate iterable, it has handled as following:
+    [1,2,3] -> [a,b,c] =
+    Thread 1: 1 -> [a,b,c]
+    Thread 2: 2 -> [a,b,c]
+    ...
+    '''
     for item in object_or_objects:
 
         # TODO: This is a hack to prevent from item to be confused as fcn call and raise NameError.
@@ -166,6 +206,9 @@ def __eval_single_object(object_or_objects, operator, provider, changed_provider
                          locals_, globals_, return_value_queue, orig_return_value_queue,
                          ignore_iterables, resources):
 
+    '''
+    Treat object_or_objects as a single object, and evaluate it directly.
+    '''
     # Get current input
 
     input = locals_.get('_', None)
@@ -317,10 +360,37 @@ def __eval_single_object(object_or_objects, operator, provider, changed_provider
             __queue_to_queue(return_value_queue, orig_return_value_queue)
 
 
-def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arrays, provider=threading.Thread):
+def __change_provider(expression, locals_, globals_, provider, return_value_queue,
+                      iterate_literal_arrays, operator):
 
-    ##GUY - DEBUG
-    #print 'Entering __run: expression = %s' %(expression)
+    '''
+    guyadini - TODO: I don't really understand this function.
+    Itsik - can you help explain this?
+    The only documentation so far is "thread or process?"
+    TODO 2: Why do we need to pass iterate_literal_arrays and operator? This is implicit and strange
+    (since they aren't used anywhere in the code, but rather inside the evaluation).
+    '''
+
+    future_object = python.eval(expression[1][1], globals_, locals_)
+
+    (ignored_value, new_provider, new_return_value_queue) = python.eval(future_object.get_attributes())
+
+    if new_provider != provider:
+
+        changed_provider = True
+
+        return_value_queue = new_return_value_queue()
+
+    provider = new_provider
+
+    # Unpack __builtins.__attributedcode()
+
+    expression[1] = python.eval(future_object.get_expression())
+
+    return (provider, changed_provider, return_value_queue)
+
+
+def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arrays, provider=threading.Thread):
 
     #Setup
 
@@ -338,80 +408,22 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
         ignore_iterables = ignore_iterables + [list, tuple]
 
-    # Thread or Process?
+    # Thread or process?
 
-########################################################################################
-#TODO: export to function
     if expression[1:] and expression[1][1].startswith('__builtins__.attributedcode'):
 
-        future_object = python.eval(expression[1][1], globals_, locals_)
+        provider, changed_provider, return_value_queue = __change_provider(expression, locals_, globals_, provider,
+                                                                           return_value_queue, iterate_literal_arrays, operator)
 
-        (ignored_value, new_provider, new_return_value_queue) = python.eval(future_object.get_attributes())
+    # Evaluate current atom, then either evaluate each element of the iterable separately,
+    # or treat it as a single block.
 
-        if new_provider != provider:
-
-            changed_provider = True
-
-            return_value_queue = new_return_value_queue()
-
-        provider = new_provider
-
-        # Unpack __builtins.__attributedcode()
-
-        expression[1] = python.eval(future_object.get_expression())
-########################################################################################
-#TODO - export to function
-    # TODO: This is a hack to support instances, should be re-written. If atom is `literal` or `instance`, it should appear as a metadata/attribute
-
-    try:
-
-        object_or_objects = python.eval(atom, globals_, locals_)
-
-    except NameError as e:
-
-        try:
-
-            import importlib
-
-            # NameError: name 'os' is not defined
-
-            mod_name = e.message.split()[1][1:-1]
-
-            globals_.update({mod_name: importlib.import_module(mod_name)})
-
-            object_or_objects = python.eval(atom, globals_, locals_)
-
-        except Exception as e1:
-
-            raise e1
-
-    except TypeError as e:
-
-        # Due to eval()?
-
-        if (e.message == 'eval() arg 1 must be a string or code object'):
-
-            object_or_objects = atom
-
-        else:
-
-            raise e
-########################################################################################
-
-    # [1,2,3] -> [a,b,c] =
-    #       Thread 1: 1 -> [a,b,c]
-    #       Thread 2: 2 -> [a,b,c]
-    #       ...
+    object_or_objects = __eval_current_atom(atom, locals_, globals_)
 
     if not isinstance(object_or_objects, tuple(ignore_iterables)) and __isiter(object_or_objects):
 
         __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, locals_, globals_,
                                 iterate_literal_arrays, return_value_queue, orig_return_value_queue, resources)
-
-########################################################################################
-#TODO - export to function
-
-    # 1 -> [a,b,c]
 
     else:
 
