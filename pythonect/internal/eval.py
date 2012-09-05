@@ -72,12 +72,6 @@ def __queue_to_queue(source_queue, dest_queue):
 
         pass
 
-# CHANGED: moved __eval_many out of the main __run.
-# TODO: 1. Make it work (looks like it is - clone the orig and compare the output of 
-#        "python setup.py test" to make sure) - DONE.
-#       2. Make the rest of __run into eval_single_expr
-#       3. Break into multiple functions.
-  
 
 def __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, \
                             locals_, globals_, iterate_literal_arrays, return_value_queue, \
