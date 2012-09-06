@@ -82,6 +82,7 @@ if __name__ == "__main__":
             'Operating System :: OS Independent',
             'Programming Language :: Python',
             'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 2.6',
         ],
 
         install_requires=dependencies,
