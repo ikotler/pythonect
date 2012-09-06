@@ -1,6 +1,18 @@
 #!/usr/bin/env python
 
-import setuptools
+try:
+
+    import setuptools
+
+except ImportError:
+
+    from distribute_setup import use_setuptools
+
+    use_setuptools()
+
+    import setuptools
+
+
 import distutils.core
 import distutils.command.build
 
