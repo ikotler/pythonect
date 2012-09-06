@@ -13,6 +13,7 @@ except ImportError:
     import setuptools
 
 
+import sys
 import distutils.core
 import distutils.command.build
 
@@ -48,6 +49,20 @@ class Build(distutils.command.build.build):
 
 if __name__ == "__main__":
 
+    dependencies = ['ply>=3.4']
+
+    major, minor = sys.version_info[:2]
+
+    python_27 = (major > 2 or (major == 2 and minor >= 7))
+
+    # < Python 2.7 ?
+
+    if not python_27:
+
+        # Python 2.6
+
+        dependencies = dependencies + ['importlib', 'unittest2']
+
     setupconf = dict(
         name='Pythonect',
         version=pythonect.__version__,
@@ -69,7 +84,7 @@ if __name__ == "__main__":
             'Programming Language :: Python :: 2.7',
         ],
 
-        install_requires=['ply>=3.4'],
+        install_requires=dependencies,
 
         cmdclass={'build': Build},
 
