@@ -6,6 +6,9 @@ import logging
 import importlib
 import types
 import time
+import site
+import os
+import sys
 
 
 try:
@@ -242,7 +245,15 @@ def __apply_output_to_input(output, input_, locals_, globals_):
 
     else:
 
-        output = output(input_)
+        # Ignore "copyright", "credits", "license", and "help"
+
+        if isinstance(output, (site._Printer, site._Helper)):
+
+            output = output()
+
+        else:
+
+            output = output(input_)
 
     return output
 
@@ -491,6 +502,12 @@ def __extend_builtins(globals_):
     # Add GIL
 
     setattr(globals_['__builtins__'], '__GIL__', global_interpreter_lock)
+
+    # Fix "copyright", "credits", and "license"
+
+    setattr(globals_['__builtins__'], 'copyright', site._Printer("copyright", "Copyright (c) 2012-2013 by Itzik Kotler and others.\nAll Rights Reserved."))
+    setattr(globals_['__builtins__'], 'credits', site._Printer("credits", "See www.pythonect.org for more information."))
+    setattr(globals_['__builtins__'], 'license', site._Printer("license", "See https://github.com/ikotler/pythonect/blob/master/LICENSE", ["LICENSE"], [os.path.abspath(__file__ + "/../../../")]))
 
     return globals_
 
