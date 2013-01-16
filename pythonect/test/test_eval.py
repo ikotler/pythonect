@@ -385,7 +385,16 @@ class TestPythonect(unittest.TestCase):
 
     def test_typeerror_exception_not_due_to_eval(self):
 
-        self.assertEqual(pythonect.eval('1 -> socket.socket(socket.AF_INET, socket.SOCK_STREAM) -> _.connect("A","B")', {}, {}), False)
+        import sys
+        import os
+
+        orig_stderr = sys.stderr
+
+        sys.stderr = open(os.devnull, 'w')
+
+        self.assertEqual(pythonect.eval('1 -> socket.socket(socket.AF_INET, socket.SOCK_STREAM) -> _.connect("A","B")', {'sys': sys}, {'sys': sys}), False)
+
+        sys.stderr = orig_stderr
 
     # Bug #21
 
