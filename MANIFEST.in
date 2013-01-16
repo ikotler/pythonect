@@ -1,1 +1,1 @@
-include bin/pythonect README.rst LICENSE NEWS
+include bin/pythonect README.rst LICENSE NEWS setup.cfg .coveragerc
