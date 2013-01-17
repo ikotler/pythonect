@@ -332,6 +332,14 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(pythonect.eval('def ret_none(): return "None" -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', {}, {}), 2)
 
+    def test_pythonect_eval_fcn(self):
+
+        self.assertEqual(pythonect.eval("eval('1->1', {}, {})", {}, {}), 1)
+
+    def test_python_eval_within_pythonect_program(self):
+
+        self.assertEqual(pythonect.eval("__eval__('1')", {}, {}), 1)
+
     ############################################################
     # Ticket numbers in this file can be looked up by visiting #
     # http://github.com/ikotler/pythonect/issues/<number>      #

@@ -509,6 +509,11 @@ def __extend_builtins(globals_):
     setattr(globals_['__builtins__'], 'credits', site._Printer("credits", "See www.pythonect.org for more information."))
     setattr(globals_['__builtins__'], 'license', site._Printer("license", "See https://github.com/ikotler/pythonect/blob/master/LICENSE", ["LICENSE"], [os.path.abspath(__file__ + "/../../../")]))
 
+    # Map eval() to Pythonect's eval, and __eval__ to Python's eval
+
+    globals_['__eval__'] = getattr(globals_['__builtins__'], 'eval')
+    globals_['eval'] = eval
+
     return globals_
 
 
