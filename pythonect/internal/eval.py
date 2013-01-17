@@ -91,8 +91,10 @@ def __eval_current_atom(atom, locals_, globals_):
             import importlib
 
             # NameError: name 'os' is not defined
+            #  - OR -
+            # NameError: global name 'os' is not defined
 
-            mod_name = e.message.split()[1][1:-1]
+            mod_name = e.message[e.message.index("'") + 1:e.message.rindex("'")]
 
             globals_.update({mod_name: importlib.import_module(mod_name)})
 
