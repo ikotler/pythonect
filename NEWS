@@ -8,9 +8,24 @@ HEAD
 Core and builtins
 -----------------
 
+- Improved Interpreter Banner
+
+- args globals_ and locals_ of eval() are now optional
+
+- Within Pythonect Program, eval() now takes Pythonect code and __eval__() takes Python
+
 - Refactor __run()
 
+- Pythonect now supports PyPy
+
 - Feature #55: Pythonect now supports Python 2.6
+
+- Issue #60: "copyright", "license", and "credits" are not of Pythonect
+
+Build
+-----
+
+- Switched to nosetests (+ coverage)
 
 
 What's New In Pythonect 0.4.1?
