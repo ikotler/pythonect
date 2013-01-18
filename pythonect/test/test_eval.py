@@ -366,6 +366,10 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(pythonect.eval("__eval__('1')", {}, {}), 1)
 
+    def test_void_function(self):
+
+        self.assertEqual(pythonect.eval("def void_foobar(): return 2 -> 1 -> void_foobar", {}, {}), 2)
+
     ############################################################
     # Ticket numbers in this file can be looked up by visiting #
     # http://github.com/ikotler/pythonect/issues/<number>      #

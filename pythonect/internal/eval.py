@@ -283,7 +283,21 @@ def __apply_output_to_input(output, input_, locals_, globals_):
 
         else:
 
-            output = output(input_)
+            try:
+
+                output = output(input_)
+
+            except TypeError as e:
+
+                # i.e. TypeError: f() takes no arguments (1 given)
+
+                if e.args[0].find('takes no arguments') != -1:
+
+                    output = output()
+
+                else:
+
+                    raise e
 
     return output
 

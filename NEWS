@@ -24,6 +24,8 @@ Core and builtins
 
 - Issue #60: "copyright", "license", and "credits" are not of Pythonect
 
+- Issue #61: Parameterless functions are now handled properly
+
 Build
 -----
 
