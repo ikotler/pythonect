@@ -125,7 +125,7 @@ def main():
 
     # Pythonect's Banner
 
-    banner = "Pythonect %s" % pythonect.__version__
+    banner = """Python %s\n[Pythonect %s] on %s\nType "help", "copyright", "credits" or "license" for more information.""" % (sys.version.split('\n')[0], pythonect.__version__, sys.platform)
 
     # Parse command-line arguments
 
