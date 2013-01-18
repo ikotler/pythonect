@@ -8,6 +8,8 @@ HEAD
 Core and builtins
 -----------------
 
+- Feature #61: Interpreter supports command line '-c', '-i' and '-m'
+
 - Improved Interpreter Banner
 
 - args globals_ and locals_ of eval() are now optional

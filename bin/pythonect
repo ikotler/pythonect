@@ -8,6 +8,7 @@ import argparse
 import logging
 import os
 import atexit
+import runpy
 
 
 try:
@@ -121,6 +122,8 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
 def main():
 
+    locals = {}
+
     verbose_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 
     # Pythonect's Banner
@@ -135,6 +138,9 @@ def main():
     parser.add_argument('arg', metavar='arg', nargs='*', help='arguments passed to program in sys.argv[1:]')
     parser.add_argument('--verbose', '-v', action='count', default=0)
     parser.add_argument('--version', '-V', action='version', version=banner)
+    parser.add_argument('--interactive', '-i', action='store_true', default=False, help='inspect interactively after running script')
+    parser.add_argument('--command', '-c', metavar='cmd', nargs='*', help='program passed in as string')
+    parser.add_argument('--module', '-m', metavar='mod', action='store', help='run library module as a script')
 
     args = parser.parse_args()
 
@@ -150,23 +156,43 @@ def main():
 
         sys.argv = ['']
 
+    # Module as script mode (i.e. python -m 'os')
+
+    if args.module:
+
+        locals = runpy.run_module(args.module)
+
+    # Command line mode (i.e. ./pythonect -c "'Hello world' -> print")
+
+    if args.command:
+
+        pythonect.eval(args.command[0], globals(), locals)
+
     # Script-mode (i.e. ./pythonect script or #!/usr/bin/env pythonect)
 
     if args.script:
 
-        pythonect.eval(args.script.read().replace('\\\n', ''), {}, {})
+        pythonect.eval(args.script.read().replace('\\\n', ''), globals_, locals_)
 
         args.script.close()
 
-    # Interactive-mode (i.e. ./pythonect)
+    if not args.module and not args.command and not args.script:
+
+        args.interactive = True
 
     else:
+
+        banner = ''
+
+    # Interactive-mode (i.e. ./pythonect)
+
+    if args.interactive:
 
         # Add current working directory to sys.path
 
         sys.path.insert(0, os.getcwd())
 
-        PythonectInteractiveConsole().interact(banner)
+        PythonectInteractiveConsole(locals).interact(banner)
 
     return 0
 
