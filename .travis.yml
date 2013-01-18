@@ -8,8 +8,6 @@ install:
     - pip install nose
     - pip install coverage
     - python setup.py install
-before_script:
-    - pep8 --exclude codegen.py,distribute_setup.py --ignore E501 pythonect
 script:
     - python setup.py nosetests
 notifications:
