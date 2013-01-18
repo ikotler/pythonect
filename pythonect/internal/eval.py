@@ -573,7 +573,7 @@ def parse(source):
     return parser.Parser().parse(source)
 
 
-def eval(source, globals_, locals_):
+def eval(source, globals_={}, locals_={}):
     """Evaluate Pythonect code in the context of globals and locals.
 
     Args:
