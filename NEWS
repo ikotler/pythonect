@@ -24,7 +24,9 @@ Core and builtins
 
 - Issue #60: "copyright", "license", and "credits" are not of Pythonect
 
-- Issue #61: Parameterless functions are now handled properly
+- Issue #62: Parameterless functions are now handled properly
+
+- Issue #63: "quit" and "exit" raises ValueError: I/O operation on closed file
 
 Build
 -----
