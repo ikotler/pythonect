@@ -117,7 +117,9 @@ if __name__ == "__main__":
 
         cmdclass={'build': Build},
 
-        test_suite='pythonect.test.get_tests'
+        test_suite='pythonect.test.get_tests',
+
+        zip_safe=False
     )
 
     setuptools.setup(**setupconf)

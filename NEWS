@@ -37,6 +37,8 @@ Build
 
 - Switched to nosetests (+ coverage)
 
+- Set zip_safe to False
+
 
 What's New In Pythonect 0.4.1?
 ==============================
