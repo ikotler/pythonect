@@ -10,15 +10,15 @@ Core and builtins
 
 - Feature #61: Interpreter supports command line '-c', '-i' and '-m'
 
-- Improved Interpreter Banner
+- Enhancement #68: Improved Interpreter Banner
 
-- args globals_ and locals_ of eval() are now optional
+- Enhancement #67: args globals_ and locals_ of eval() are now optional
 
-- Within Pythonect Program, eval() now takes Pythonect code and __eval__() takes Python
+- Feature #66: Within Pythonect Program, eval() now takes Pythonect code and __eval__() takes Python
 
 - Refactor __run()
 
-- Pythonect now supports PyPy
+- Feature #65: Pythonect now supports PyPy
 
 - Feature #55: Pythonect now supports Python 2.6
 
@@ -37,7 +37,7 @@ Build
 
 - Switched to nosetests (+ coverage)
 
-- Set zip_safe to False
+- Issue #49: zip_safe is not False by default
 
 
 What's New In Pythonect 0.4.1?
