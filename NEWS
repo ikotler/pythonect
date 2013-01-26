@@ -22,6 +22,8 @@ Core and builtins
 
 - Feature #55: Pythonect now supports Python 2.6
 
+- Issue #48: 'print "B" in "ABC"' and 'print 2 is 2' throws Exception
+
 - Issue #60: "copyright", "license", and "credits" are not of Pythonect
 
 - Issue #62: Parameterless functions are now handled properly

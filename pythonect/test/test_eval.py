@@ -470,3 +470,13 @@ class TestPythonect(unittest.TestCase):
     def test_dict_as_return_value_as_input(self):
 
         self.assertEqual(pythonect.eval("def foobar(): return {'foobar': 'foobar'} -> foobar() -> print", {}, {}), {"foobar": "foobar"})
+
+    # Bug #48
+
+    def test_print_B_in_ABC(self):
+
+        self.assertEqual(pythonect.eval('1 -> print "B" in "ABC"', {}, {}), 1)
+
+    def test_print_2_is_2(self):
+
+        self.assertEqual(pythonect.eval('1 -> print 2 is 2', {}, {}), 1)

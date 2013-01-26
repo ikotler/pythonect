@@ -243,7 +243,13 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
                 if node.values:
 
-                    new_buffer = '__builtins__.print_(' + codegen.to_source(node)[5:] + ')'
+                    if isinstance(node.values[0], _ast.Compare):
+
+                        new_buffer = '__builtins__.print_(' + buffer.replace('print','') + ')'
+
+                    else:
+
+                        new_buffer = '__builtins__.print_(' + codegen.to_source(node)[5:] + ')'
 
                 # It's (a) Python and (b) expression
 
