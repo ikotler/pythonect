@@ -28,6 +28,8 @@ Core and builtins
 
 - Issue #63: "quit" and "exit" raises ValueError: I/O operation on closed file
 
+- Issue #64: Interpreter command line option '--version'/'-V' output wrong banner
+
 Build
 -----
 

@@ -153,9 +153,9 @@ def main():
 
     verbose_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 
-    # Pythonect's Banner
+    # Pythonect's Banner (for -V, --version purposes)
 
-    banner = """Python %s\n[Pythonect %s] on %s\nType "help", "copyright", "credits" or "license" for more information.""" % (sys.version.split('\n')[0], pythonect.__version__, sys.platform)
+    banner = "Pythonect %s" % pythonect.__version__
 
     # Parse command-line arguments
 
@@ -218,6 +218,10 @@ def main():
         # Add current working directory to sys.path
 
         sys.path.insert(0, os.getcwd())
+
+        # Pythonect's Banner (for -V, --version purposes)
+
+        banner = """Python %s\n[Pythonect %s] on %s\nType "help", "copyright", "credits" or "license" for more information.""" % (sys.version.split('\n')[0], pythonect.__version__, sys.platform)
 
         PythonectInteractiveConsole(locals).interact(banner)
 
