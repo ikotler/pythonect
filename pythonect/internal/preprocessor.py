@@ -237,7 +237,7 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
             if isinstance(node, _ast.Print):
 
-                new_buffer = '__builtins__.print_'
+                new_buffer = 'print_'
 
                 # "Module(body=[Print(dest=None, values=[Str(s='Hello World')], nl=True)])"
 
@@ -245,11 +245,11 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
                     if isinstance(node.values[0], _ast.Compare):
 
-                        new_buffer = '__builtins__.print_(' + buffer.replace('print','') + ')'
+                        new_buffer = 'print_(' + buffer.replace('print','') + ')'
 
                     else:
 
-                        new_buffer = '__builtins__.print_(' + codegen.to_source(node)[5:] + ')'
+                        new_buffer = 'print_(' + codegen.to_source(node)[5:] + ')'
 
                 # It's (a) Python and (b) expression
 

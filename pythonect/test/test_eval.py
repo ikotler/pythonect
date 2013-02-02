@@ -480,3 +480,9 @@ class TestPythonect(unittest.TestCase):
     def test_print_2_is_2(self):
 
         self.assertEqual(pythonect.eval('1 -> print 2 is 2', {}, {}), 1)
+
+    # Bug #69
+
+    def test_alt_print__fcn(self):
+
+        self.assertEqual(pythonect.eval('1 -> print', {}, {'print_': lambda x: 123}), 123)

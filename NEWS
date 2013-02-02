@@ -32,6 +32,8 @@ Core and builtins
 
 - Issue #64: Interpreter command line option '--version'/'-V' output wrong banner
 
+- Issue #69: print/print_ can now be overridden by locals or globals value
+
 Build
 -----
 
