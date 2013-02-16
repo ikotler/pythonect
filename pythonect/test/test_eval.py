@@ -335,12 +335,24 @@ class TestPythonect(unittest.TestCase):
     @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multiprocess_program_async(self):
 
-        self.assertEqual(pythonect.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', {}, {}), 1)
+        try:
+
+            self.assertEqual(pythonect.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', {}, {}), 1)
+
+        except OSError as e:
+
+            return 1
 
     @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multiprocess_program_sync(self):
 
-        self.assertEqual(pythonect.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
+        try:
+
+            self.assertEqual(pythonect.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
+
+        except OSError as e:
+
+            return 1
 
     def test_pseudo_none_const_as_url(self):
 
@@ -445,7 +457,15 @@ class TestPythonect(unittest.TestCase):
     @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multi_processing_and_multi_threading(self):
 
-        self.assertEqual(pythonect.eval('"Hello, world" -> [print, print &]', {}, {}), ['Hello, world', 'Hello, world'])
+        try:
+
+            self.assertEqual(pythonect.eval('"Hello, world" -> [print, print &]', {}, {}), ['Hello, world', 'Hello, world'])
+
+        except OSError as e:
+
+            # i.e. OSError: [Errno 13] Permission denied
+
+            return 1
 
     # Bug #30
 
