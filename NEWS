@@ -2,8 +2,10 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
-HEAD
-====
+What's New In Pythonect 0.4.2?
+==============================
+
+*Release date: 16-Feb-2013*
 
 Core and builtins
 -----------------
@@ -14,9 +16,9 @@ Core and builtins
 
 - Enhancement #67: args globals_ and locals_ of eval() are now optional
 
-- Feature #66: Within Pythonect Program, eval() now takes Pythonect code and __eval__() takes Python
+- Feature #66: Within Pythonect Program: eval() now takes Pythonect code and __eval__() takes Python
 
-- Refactor __run()
+- Refactor __run() [Guy Adini]
 
 - Feature #65: Pythonect now supports PyPy
 
@@ -32,7 +34,7 @@ Core and builtins
 
 - Issue #64: Interpreter command line option '--version'/'-V' output wrong banner
 
-- Issue #69: print/print_ can now be overridden by locals or globals value
+- Issue #69: print/print_ can not be overridden by locals or globals value
 
 Build
 -----
