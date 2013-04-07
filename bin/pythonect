@@ -183,6 +183,10 @@ def main():
 
         sys.argv = ['']
 
+    # Add current working directory to sys.path
+
+    sys.path.insert(0, os.getcwd())
+
     # Module as script mode (i.e. python -m 'os')
 
     if args.module:
@@ -214,10 +218,6 @@ def main():
     # Interactive-mode (i.e. ./pythonect)
 
     if args.interactive:
-
-        # Add current working directory to sys.path
-
-        sys.path.insert(0, os.getcwd())
 
         # Pythonect's Banner (for -V, --version purposes)
 

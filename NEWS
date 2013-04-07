@@ -7,6 +7,8 @@ HEAD
 
 - Issue #71: Unable to run Pythonect in Script Mode
 
+- Issue #72: Can't Load Local Modules with '-m'
+
 
 What's New In Pythonect 0.4.2?
 ==============================
