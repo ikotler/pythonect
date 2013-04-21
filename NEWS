@@ -9,6 +9,8 @@ HEAD
 
 - Issue #72: Can't Load Local Modules with '-m'
 
+- Issue #58: Install argparse if Python 2.6
+
 
 What's New In Pythonect 0.4.2?
 ==============================

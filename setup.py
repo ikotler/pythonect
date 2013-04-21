@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
         # Python 2.6
 
-        dependencies = dependencies + ['importlib', 'unittest2']
+        dependencies = dependencies + ['argparse', 'importlib', 'unittest2']
 
     setupconf = dict(
         name='Pythonect',
