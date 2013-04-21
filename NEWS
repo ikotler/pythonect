@@ -11,6 +11,8 @@ HEAD
 
 - Issue #58: Install argparse if Python 2.6
 
+- Feature #70: Pythonect now supports Max Threads Limit (i.e. '--mt' command-line argument)
+
 
 What's New In Pythonect 0.4.2?
 ==============================

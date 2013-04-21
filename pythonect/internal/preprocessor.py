@@ -245,7 +245,7 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
                     if isinstance(node.values[0], _ast.Compare):
 
-                        new_buffer = 'print_(' + buffer.replace('print','') + ')'
+                        new_buffer = 'print_(' + buffer.replace('print', '') + ')'
 
                     else:
 
@@ -385,17 +385,7 @@ def preprocessor(buffer, stmt_as_is, tries=0):
 
         # Assume new_buffer is from PYTHON_EXPRESSION
 
-        try:
-
-            import multiprocessing
-
-            new_buffer = '__builtins__.attributedcode("(operator, \'%s\')", "(iterate_literal_arrays, multiprocessing.Process, multiprocessing.Queue)")' % actual_buffer[1]
-
-        except ImportError:
-
-            # Don't break syntax due to missing multiprocessing, use Threads if applicable.
-
-            pass
+        new_buffer = '__builtins__.attributedcode("(operator, \'%s\')", "({\'__PROCESS__\':True}, {})")' % actual_buffer[1]
 
     # Try again!
 

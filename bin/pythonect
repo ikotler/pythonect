@@ -36,6 +36,7 @@ import logging
 import os
 import atexit
 import runpy
+import multiprocessing
 
 
 try:
@@ -149,7 +150,7 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
 def main():
 
-    locals_ = {}
+    locals = {}
 
     verbose_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 
@@ -168,6 +169,7 @@ def main():
     parser.add_argument('--interactive', '-i', action='store_true', default=False, help='inspect interactively after running script')
     parser.add_argument('--command', '-c', metavar='cmd', nargs='*', help='program passed in as string')
     parser.add_argument('--module', '-m', metavar='mod', action='store', help='run library module as a script')
+    parser.add_argument('--max-threads-per-flow', '-mt', metavar='N', default=multiprocessing.cpu_count() + 1, type=int, action='store', help='max threads per flow')
 
     args = parser.parse_args()
 
@@ -183,27 +185,27 @@ def main():
 
         sys.argv = ['']
 
-    # Add current working directory to sys.path
-
-    sys.path.insert(0, os.getcwd())
-
     # Module as script mode (i.e. python -m 'os')
 
     if args.module:
 
-        locals_ = runpy.run_module(args.module)
+        locals = runpy.run_module(args.module)
+
+    # Max threads per pipe
+
+    locals.update(__MAX_THREADS_PER_FLOW__=args.max_threads_per_flow)
 
     # Command line mode (i.e. ./pythonect -c "'Hello world' -> print")
 
     if args.command:
 
-        pythonect.eval(args.command[0], globals(), locals_)
+        pythonect.eval(args.command[0], globals(), locals)
 
     # Script-mode (i.e. ./pythonect script or #!/usr/bin/env pythonect)
 
     if args.script:
 
-        pythonect.eval(args.script.read().replace('\\\n', ''), globals(), locals_)
+        pythonect.eval(args.script.read().replace('\\\n', ''), globals_, locals_)
 
         args.script.close()
 
@@ -219,11 +221,15 @@ def main():
 
     if args.interactive:
 
+        # Add current working directory to sys.path
+
+        sys.path.insert(0, os.getcwd())
+
         # Pythonect's Banner (for -V, --version purposes)
 
         banner = """Python %s\n[Pythonect %s] on %s\nType "help", "copyright", "credits" or "license" for more information.""" % (sys.version.split('\n')[0], pythonect.__version__, sys.platform)
 
-        PythonectInteractiveConsole(locals_).interact(banner)
+        PythonectInteractiveConsole(locals).interact(banner)
 
     return 0
 

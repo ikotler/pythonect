@@ -27,7 +27,6 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import __builtin__ as python
-import Queue as queue
 import threading
 import copy
 import logging
@@ -37,17 +36,11 @@ import time
 import site
 import os
 import sys
-
-
-try:
-
-    import multiprocessing
-
-except ImportError:
-
-    # TODO: Warn that Current Python implementation does not support Multiprocessing
-
-    pass
+import multiprocessing
+import multiprocessing.dummy
+import multiprocessing.pool
+import functools
+import pickle
 
 
 # Local imports
@@ -59,6 +52,25 @@ import lang
 # Global variables
 
 global_interpreter_lock = threading.Lock()
+
+
+class NoDaemonProcess(multiprocessing.Process):
+
+    # make 'daemon' attribute always return False
+    def _get_daemon(self):
+
+        return False
+
+    def _set_daemon(self, value):
+
+        pass
+
+    daemon = property(_get_daemon, _set_daemon)
+
+
+class NoDaemonPool(multiprocessing.pool.Pool):
+
+    Process = NoDaemonProcess
 
 
 def __isiter(object):
@@ -74,34 +86,62 @@ def __isiter(object):
         return False
 
 
-def __pickable_dict(locals_or_globals):
+def __pickle_safe_dict(locals_or_globals):
 
     result = dict(locals_or_globals)
 
     for k, v in locals_or_globals.iteritems():
 
-        if isinstance(v, types.ModuleType):
+        try:
+
+            # NOTE: Is there a better/faster way?
+
+            pickle.dump(v, open(os.devnull, 'w'))
+
+        except Exception:
 
             del result[k]
 
     return result
 
 
-def __queue_to_queue(source_queue, dest_queue):
+def __create_default_pool(globals_, locals_):
 
-    try:
+    return multiprocessing.dummy.Pool(locals_.get('__MAX_THREADS_PER_FLOW__', multiprocessing.cpu_count() + 1))
 
-        # While source queue contain return value(s)
 
-        while True:
+def __create_pool(globals_, locals_):
 
-            (resource_return_value, resource_globals, resource_locals) = source_queue.get(True, 1)
+    # Process Pool?
 
-            dest_queue.put((resource_return_value, resource_globals, resource_locals), True, 1)
+    if '__PROCESS__' in globals_ or '__PROCESS__' in locals_:
 
-    except queue.Empty:
+        return NoDaemonPool(locals_.get('__MAX_PROCESSES_PER_FLOW__', None))
 
-        pass
+    return __create_default_pool(globals_, locals_)
+
+
+def __resolve_and_fix_results(results_list):
+
+    resolved = []
+
+    for element in results_list:
+
+        if isinstance(element, multiprocessing.pool.ApplyResult):
+
+            element = element.get()
+
+        if isinstance(element, list):
+
+            for sub_element in element:
+
+                resolved.append(sub_element)
+
+        else:
+
+            resolved.append(element)
+
+    return resolved
 
 
 def __eval_current_atom(atom, locals_, globals_):
@@ -143,6 +183,7 @@ def __eval_current_atom(atom, locals_, globals_):
         else:
 
             raise e
+
     return object_or_objects
 
 
@@ -152,69 +193,37 @@ def __fix_str_form(item):
     '''
     if isinstance(item, basestring):
 
-        item = "'" + item + "'"
+        item = "'''" + item.replace("'", "\\'") + "'''"
 
     return item
 
 
-def __join_async_resources(resources, changed_provider, return_value_queue, orig_return_value_queue):
-    '''
-    Handle the case of multiple async resources by waiting for each of them to terminate,
-    and if the provider has changed - transferring the queue to the new provider's queue.
-    '''
+def __run_resource_in_multi(operator, item, provider, expression, locals_, globals_):
 
-    if resources:
-
-        # Wait for resources
-
-        for resource in resources:
-
-            resource.join(None)
-
-            if changed_provider:
-
-                __queue_to_queue(return_value_queue, orig_return_value_queue)
-
-
-def __run_resource_in_multi(operator, item, provider, changed_provider, resources, expression, locals_, globals_,
-                            return_value_queue, orig_return_value_queue, iterate_literal_arrays):
-
-    resource = provider(target=__run, args=([(operator, item)] + expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, not iterate_literal_arrays, provider))
-
-    resource.start()
-
-    # TODO: A patchy way to fix a timing bug that sometimes occur and causes the program to hang (reproduciton: 'Hello, world' -> [print, print &]' ; repeat until hangs)
-
-    time.sleep(1)
+    globals_.update({'__ITERATE_LITERAL_ARRAYS__': not globals_['__ITERATE_LITERAL_ARRAYS__']})
 
     # Synchronous
 
     if operator == '|':
 
-        resource.join()
-
-        if changed_provider:
-
-            __queue_to_queue(return_value_queue, orig_return_value_queue)
+        return provider.apply(eval, args=([[(operator, item)] + expression[1:]], globals_, locals_))
 
     # Asynchronous
 
     else:
 
-        resources.append(resource)
+        return provider.apply_async(eval, args=([[(operator, item)] + expression[1:]], globals_, locals_))
 
 
-def __change_provider_in_multi(item, provider, operator, locals_, return_value_queue, expression, iterate_literal_arrays):
+def __change_provider_in_multi(item, expression, operator, globals_, locals_):
 
-    (ignored_value, new_provider, new_return_value_queue) = python.eval(item.get_attributes())
+    (new_globals_, new_locals_) = python.eval(item.get_attributes())
 
-    if new_provider != provider:
+    # Update
 
-        changed_provider = True
+    globals_.update(new_globals_)
 
-        return_value_queue = new_return_value_queue()
-
-    provider = new_provider
+    locals_.update(new_locals_)
 
     # Unpack __builtins.__attributedcode()
 
@@ -224,12 +233,10 @@ def __change_provider_in_multi(item, provider, operator, locals_, return_value_q
 
     item = __fix_str_form(locals_.get('_', None))
 
-    return (item, expression, return_value_queue, changed_provider)
+    return (item, expression, __create_pool(globals_, locals_))
 
 
-def __eval_multiple_objects(objects, operator, provider, changed_provider, expression,
-                            locals_, globals_, iterate_literal_arrays, return_value_queue,
-                            orig_return_value_queue, resources):
+def __eval_multiple_objects(objects, operator, provider, expression, locals_, globals_):
     '''
     When objects is an appropriate iterable, it has handled as following:
     [1,2,3] -> [a,b,c] =
@@ -238,25 +245,75 @@ def __eval_multiple_objects(objects, operator, provider, changed_provider, expre
     ...
     '''
 
+    return_value = []
+
+    globals_values = []
+
+    locals_values = []
+
     for item in objects:
 
         # TODO: This is a hack to prevent from item to be confused as fcn call and raise NameError.
 
         item = __fix_str_form(item)
 
+        temp_globals_ = copy.copy(globals_)
+
+        temp_locals_ = copy.copy(locals_)
+
         # Process? (i.e. 'Hello, world' -> [print, print &])
 
         if isinstance(item, lang.attributedcode):
 
-            item, expression, return_value_queue, changed_provider = \
-                __change_provider_in_multi(item, provider, operator, locals_, return_value_queue, expression, iterate_literal_arrays)
+            item, expression, provider = __change_provider_in_multi(item, expression, operator, globals_, locals_)
 
-        __run_resource_in_multi(operator, item, provider, changed_provider, resources, expression, locals_, globals_,
-                                return_value_queue, orig_return_value_queue, iterate_literal_arrays)
+            temp_locals_ = __pickle_safe_dict(locals_)
+
+            temp_globals_ = __pickle_safe_dict(globals_)
+
+        if not isinstance(provider, multiprocessing.pool.ThreadPool):
+
+            temp_globals_ = __pickle_safe_dict(copy.copy(globals_))
+
+            temp_locals_ = __pickle_safe_dict(copy.copy(locals_))
+
+        return_value.append(__run_resource_in_multi(operator, item, provider, expression, temp_locals_, temp_globals_))
+
+        locals_values.append(temp_locals_)
+
+        globals_values.append(temp_globals_)
 
     # Finally, join all asynchronous resources (outside the objects loop)
 
-    __join_async_resources(resources, changed_provider, return_value_queue, orig_return_value_queue)
+    provider.close()
+
+    provider.join()
+
+    # Resolve AsyncResult
+
+    return_value = __resolve_and_fix_results(return_value)
+
+#    if return_value and len(return_value) == 2 and isinstance(return_value[0], list) and isinstance(return_value[1], list):
+#
+#        # Convert [[(1, {}, {})], [(2, {}, {})]] to [(1, {}, {}), (2, {}, {})]
+#
+#        return reduce(lambda x, y: x + y, return_value)
+
+    if len(globals_values) != 1:
+
+        delta_globals_, delta_locals_ = __merge_all_globals_and_locals(globals_values[0], locals_values[0], globals_values[1:], {}, locals_values[1:], {})
+
+        locals_.clear()
+        globals_.clear()
+
+        locals_.update(delta_locals_)
+        globals_.update(delta_globals_)
+
+    else:
+
+        globals_, locals_ = temp_globals_, temp_locals_
+
+    return return_value
 
 
 def __apply_output_to_input(output, input_, locals_, globals_):
@@ -370,9 +427,7 @@ def __handle_special_outputs(output, locals_, globals_, ignore_iterables):
     return (output, ignore_iterables, False)
 
 
-def __eval_single_object(output, operator, provider, changed_provider, expression,
-                         locals_, globals_, return_value_queue, orig_return_value_queue,
-                         ignore_iterables, resources):
+def __eval_single_object(output, operator, provider, expression, locals_, globals_, ignore_iterables):
 
     '''
     Treat object_or_objects as a single object, and evaluate it directly.
@@ -384,11 +439,17 @@ def __eval_single_object(output, operator, provider, changed_provider, expressio
     Otherwise, pass it on to the next atom or list of atoms.
     '''
 
+    return_value = []
+
+    globals_values = []
+
+    locals_values = []
+
     output, ignore_iterables, stop_calculation = __handle_special_outputs(output, locals_, globals_, ignore_iterables)
 
     if stop_calculation is True:
 
-        return None
+        return [False]
 
     # `output` is array or discrete?
 
@@ -400,29 +461,45 @@ def __eval_single_object(output, operator, provider, changed_provider, expressio
 
             globals_['_'] = locals_['_'] = item
 
+            temp_locals_ = copy.copy(locals_)
+
+            temp_globals_ = copy.copy(globals_)
+
+            locals_values.append(temp_locals_)
+
+            globals_values.append(temp_globals_)
+
+            # Call next atom in expression with `item` as `input`
+
             if expression[1:]:
-
-                # Call next atom in expression with `item` as `input`
-
-                resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True, provider))
-
-                resource.start()
 
                 # Synchronous
 
                 if operator == '|':
 
-                    resource.join()
+                    current_return_value = provider.apply(__run, args=(expression[1:], temp_globals_, temp_locals_, True))
+
+                # Asynchronous
 
                 else:
 
-                    resources.append(resource)
+                    current_return_value = provider.apply_async(__run, args=(expression[1:], temp_globals_, temp_locals_, True))
+
+                return_value.append(current_return_value)
 
             else:
 
-                return_value_queue.put((item, globals_, locals_))
+                return_value.append(item)
 
     else:
+
+        temp_locals_ = copy.copy(locals_)
+
+        temp_globals_ = copy.copy(globals_)
+
+        locals_values.append(temp_locals_)
+
+        globals_values.append(temp_globals_)
 
         # Same resource, next atom
 
@@ -430,87 +507,112 @@ def __eval_single_object(output, operator, provider, changed_provider, expressio
 
         if expression[1:]:
 
-            # If Thread, use the same thread, If Process, spawn a new one
+            globals_.update({'__ITERATE_LITERAL_ARRAYS__': True})
 
-            if provider == threading.Thread:
+            # Call next atom in expression with `output` as `input`
 
-                # Call next atom in expression with `output` as `input`
+            if isinstance(provider, multiprocessing.pool.ThreadPool):
 
-                __run(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True)
+                # Recycle worker
+
+                return __run(expression[1:], globals_, locals_, provider)
+
+            # Call provider.apply_async to evaluate next atom
 
             else:
 
-                # Process
+                # NOTE: Provider changing effect is only lasting *1* call, thus, reverting to default after this call
 
-                resource = provider(target=__run, args=(expression[1:], copy.copy(globals_), copy.copy(locals_), return_value_queue, True))
-
-                resource.start()
-
-                resources.append(resource)
+                return_value.append(provider.apply_async(__run, args=(expression[1:], __pickle_safe_dict(temp_globals_), __pickle_safe_dict(temp_locals_), None)))
 
         else:
 
-            return_value_queue.put((output, __pickable_dict(globals_), __pickable_dict(locals_)))
+            return_value.append(output)
 
     # Join any async resources before returning
 
-    __join_async_resources(resources, changed_provider, return_value_queue, orig_return_value_queue)
+    provider.close()
+
+    provider.join()
+
+    return_value = __resolve_and_fix_results(return_value)
+
+#    # Convert [[(1, {}, {})]] to [(1, {}, {})]
+#
+#    if return_value and len(return_value) == 1 and isinstance(return_value[0], list):
+#
+#        return_value = return_value[0]
+
+    if len(globals_values) != 1:
+
+        globals_, locals_ = __merge_all_globals_and_locals(temp_globals_, temp_locals_, globals_values[1:], {}, locals_values[1:], {})
+
+    else:
+
+        globals_, locals_ = temp_globals_, temp_locals_
+
+    return return_value
 
 
-def __change_provider(expression, locals_, globals_, provider, return_value_queue,
-                      iterate_literal_arrays, operator):
+def __change_provider_in_single(expression, operator, globals_, locals_):
 
     '''
-    guyadini - TODO: I don't really understand this function.
-    Itsik - can you help explain this?
-    The only documentation so far is "thread or process?"
-    TODO 2: Why do we need to pass iterate_literal_arrays and operator? This is implicit and strange
-    (since they aren't used anywhere in the code, but rather inside the evaluation).
     '''
 
     future_object = python.eval(expression[1][1], globals_, locals_)
 
-    (ignored_value, new_provider, new_return_value_queue) = python.eval(future_object.get_attributes())
+    (new_globals_, new_locals_) = python.eval(future_object.get_attributes())
 
-    if new_provider != provider:
+    # Update
 
-        changed_provider = True
+    globals_.update(new_globals_)
 
-        return_value_queue = new_return_value_queue()
+    locals_.update(new_locals_)
 
-    provider = new_provider
-
-    # Unpack __builtins.__attributedcode()
+    # Unpack __builtins.__attributedcode() (inc. explicit explicit to `operator`)
 
     expression[1] = python.eval(future_object.get_expression())
 
-    return (provider, changed_provider, return_value_queue)
+    return (expression, __create_pool(globals_, locals_))
 
 
-def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arrays, provider=threading.Thread):
+def __run(expression, globals_, locals_, provider=None):
 
-    #Setup
+    # Setup
 
     resources = []
+
+    globals_values = []
+
+    locals_values = []
 
     (operator, atom) = expression[0]
 
     changed_provider = False
 
-    orig_return_value_queue = return_value_queue
-
     ignore_iterables = [str, unicode, dict]
+
+    return_value = None
+
+    iterate_literal_arrays = globals_['__ITERATE_LITERAL_ARRAYS__']
 
     if not iterate_literal_arrays:
 
         ignore_iterables = ignore_iterables + [list, tuple]
 
-    # Thread or process?
+    if not provider:
+
+        provider = __create_default_pool(globals_, locals_)
+
+    # Thread or Process?
 
     if expression[1:] and expression[1][1].startswith('__builtins__.attributedcode'):
 
-        provider, changed_provider, return_value_queue = __change_provider(expression, locals_, globals_, provider,
-                                                                           return_value_queue, iterate_literal_arrays, operator)
+        (expression, provider) = __change_provider_in_single(expression, operator, globals_, locals_)
+
+        locals_ = __pickle_safe_dict(locals_)
+
+        globals_ = __pickle_safe_dict(globals_)
 
     # Evaluate current atom, then either evaluate each element of the iterable separately,
     # or treat it as a single block.
@@ -519,14 +621,13 @@ def __run(expression, globals_, locals_, return_value_queue, iterate_literal_arr
 
     if not isinstance(object_or_objects, tuple(ignore_iterables)) and __isiter(object_or_objects):
 
-        __eval_multiple_objects(object_or_objects, operator, provider, changed_provider, expression, locals_, globals_,
-                                iterate_literal_arrays, return_value_queue, orig_return_value_queue, resources)
+        return_value = __eval_multiple_objects(object_or_objects, operator, provider, expression, locals_, globals_)
 
     else:
 
-        __eval_single_object(object_or_objects, operator, provider, changed_provider, expression,
-                             locals_, globals_, return_value_queue, orig_return_value_queue,
-                             ignore_iterables, resources)
+        return_value = __eval_single_object(object_or_objects, operator, provider, expression, locals_, globals_, ignore_iterables)
+
+    return return_value
 
 
 def __extend_builtins(globals_):
@@ -557,6 +658,12 @@ def __extend_builtins(globals_):
 
     globals_['__eval__'] = getattr(globals_['__builtins__'], 'eval')
     globals_['eval'] = eval
+
+    # Default `iterate_literal_arrays`
+
+    if not '__ITERATE_LITERAL_ARRAYS__' in globals_:
+
+        globals_['__ITERATE_LITERAL_ARRAYS__'] = True
 
     return globals_
 
@@ -643,7 +750,9 @@ def eval(source, globals_={}, locals_={}):
 
         locals_values = []
 
-        waiting_list = []
+        prog_return_blocks = None
+
+        tasks = []
 
         if isinstance(source, list):
 
@@ -655,53 +764,53 @@ def eval(source, globals_={}, locals_={}):
 
         # Extend Python's __builtin__ with Pythonect's `lang`
 
-        final_globals_ = __extend_builtins(globals_)
+        start_globals_ = __extend_builtins(globals_)
 
         # Default input
 
-        if final_globals_.get('_', None) is None:
+        if start_globals_.get('_', None) is None:
 
-            final_globals_['_'] = locals_.get('_', None)
+            start_globals_['_'] = locals_.get('_', None)
 
-        # Iterate Pythonect program
+        # Execute Pythonect program
 
-        for expression in expressions:
+        pool = __create_pool(globals_, locals_)
 
-            # Execute Pythonect expression
+        # 2 ... N
 
-            resource_return_value_queue = queue.Queue()
+        for current_expression in expressions[1:]:
 
-            resource = threading.Thread(target=__run, args=(expression, final_globals_, locals_, resource_return_value_queue, True))
+            temp_globals_ = copy.copy(globals_)
 
-            resource.start()
+            temp_locals_ = copy.copy(locals_)
 
-            waiting_list.append((resource, resource_return_value_queue))
+            task_result = pool.apply_async(__run, args=(current_expression, temp_globals_, temp_locals_, None))
 
-        # Join resources by execution order
+            tasks.append((task_result, temp_locals_, temp_globals_))
 
-        for (resource, resource_queue) in waiting_list:
+        # 1 (i.e. N-1)
 
-            resource.join()
+        if expressions:
 
-            try:
+            result = __run(expressions[0], globals_, locals_, None)
 
-                # While queue contain return value(s)
+            for expr_return_value in result:
 
-                while True:
+                globals_values.append(globals_)
 
-                    (resource_return_value, resource_globals, resource_locals) = resource_queue.get(True, 1)
+                locals_values.append(locals_)
 
-                    resource_queue.task_done()
+                return_values.append(expr_return_value)
 
-                    return_values.append(resource_return_value)
+        # (2 ... N)
 
-                    locals_values.append(resource_locals)
+        for (task_result, task_locals_, task_globals_) in tasks:
 
-                    globals_values.append(resource_globals)
+            return_values.append(task_result.get())
 
-            except queue.Empty:
+            locals_values.append(task_locals_)
 
-                pass
+            globals_values.append(task_globals_)
 
         return_value = return_values
 
@@ -717,17 +826,7 @@ def eval(source, globals_={}, locals_={}):
 
             # Update globals_ and locals_
 
-            new_globals, new_locals = __merge_all_globals_and_locals(globals_, locals_, globals_values, {}, locals_values, {})
-
-            globals_.update(new_globals)
-
-            locals_.update(new_locals)
-
-        # [] ?
-
-        else:
-
-            return_value = False
+            globals_, locals_ = __merge_all_globals_and_locals(globals_, locals_, globals_values, {}, locals_values, {})
 
         # Set `return value` as `_`
 

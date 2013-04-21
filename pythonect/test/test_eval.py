@@ -48,6 +48,13 @@ import sys
 import pythonect
 
 
+def _not_python27():
+
+    major, minor = sys.version_info[:2]
+
+    return not (major > 2 or (major == 2 and minor >= 7))
+
+
 def _installed_module(name):
 
     try:
@@ -325,34 +332,29 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
-    @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
     def test_multithread_program_sync(self):
 
         r_array = pythonect.eval('import threading | [threading.current_thread().name, threading.current_thread().name]', {}, {})
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
-#    @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
-#    def test_multiprocess_program_async(self):
-#
-#        try:
-#
-#            self.assertEqual(pythonect.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', {}, {}), 1)
-#
-#        except OSError as e:
-#
-#            return 1
+    @unittest.skipIf(_not_python27(), 'Current Python implementation does not support multiprocessing (buggy)')
+    def test_multiprocess_program_async(self):
 
-#    @unittest.skipIf(not _installed_module('multiprocessing'), 'Current Python implementation does not support multiprocessing')
-#    def test_multiprocess_program_sync(self):
-#
-#        try:
-#
-#            self.assertEqual(pythonect.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
-#
-#        except OSError as e:
-#
-#            return 1
+        r_array = pythonect.eval('import threading -> [multiprocessing.current_process().pid &, multiprocessing.current_process().pid &]', {}, {})
+
+        self.assertEqual(r_array[0] != r_array[1], True)
+
+#        self.assertEqual(pythonect.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', {}, {}), 1)
+
+    @unittest.skipIf(_not_python27(), 'Current Python implementation does not support multiprocessing (buggy)')
+    def test_multiprocess_program_sync(self):
+
+        r_array = pythonect.eval('import multiprocessing | [multiprocessing.current_process().pid &, multiprocessing.current_process().pid &]', {}, {})
+
+        self.assertEqual(r_array[0] != r_array[1], True)
+
+#        self.assertEqual(pythonect.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
 
     def test_pseudo_none_const_as_url(self):
 
@@ -435,16 +437,9 @@ class TestPythonect(unittest.TestCase):
 
     def test_typeerror_exception_not_due_to_eval(self):
 
-        import sys
-        import os
+        with self.assertRaisesRegexp(TypeError, 'takes exactly'):
 
-        orig_stderr = sys.stderr
-
-        sys.stderr = open(os.devnull, 'w')
-
-        self.assertEqual(pythonect.eval('1 -> socket.socket(socket.AF_INET, socket.SOCK_STREAM) -> _.connect("A","B")', {'sys': sys}, {'sys': sys}), False)
-
-        sys.stderr = orig_stderr
+            pythonect.eval('1 -> socket.socket(socket.AF_INET, socket.SOCK_STREAM) -> _.connect("A","B")')
 
     # Bug #21
 
@@ -506,3 +501,11 @@ class TestPythonect(unittest.TestCase):
     def test_alt_print__fcn(self):
 
         self.assertEqual(pythonect.eval('1 -> print', {}, {'print_': lambda x: 123}), 123)
+
+    # Feature 70 (Freeze on Python 2.6 and Mac OS X Python 2.7.2)
+    #
+    #def test_max_threads_eq_0(self):
+    #
+    #    with self.assertRaisesRegexp(ValueError, 'Number of processes must be at least'):
+    #
+    #        pythonect.eval('range(1, 3) -> _+1', {}, {'__MAX_THREADS_PER_FLOW__': 0})
