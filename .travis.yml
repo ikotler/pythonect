@@ -8,6 +8,11 @@ install:
     - pip install nose
     - pip install coverage
     - python setup.py install
+before_script:
+    # This is needed for Python multiprocessing.
+    # https://github.com/travis-ci/travis-cookbooks/issues/155
+    - sudo rm -rf /dev/shm
+    - sudo ln -s /run/shm /dev/shm 
 script:
     - python setup.py nosetests
 notifications:
