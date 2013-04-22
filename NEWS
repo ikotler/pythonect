@@ -13,6 +13,8 @@ HEAD
 
 - Feature #70: Pythonect now supports Max Threads Limit (i.e. '--mt' command-line argument)
 
+- Feature #73: '_' is no longer implicit in the 1st call to eval()
+
 
 What's New In Pythonect 0.4.2?
 ==============================

@@ -706,6 +706,23 @@ def __merge_all_globals_and_locals(current_globals, current_locals, globals_list
     return __merge_all_globals_and_locals(current_globals, current_locals, globals_list, ignore_globals_keys, locals_list, ignore_locals_keys)
 
 
+def _is_referencing_underscore(expression):
+
+    # e.g. [u'->', u'_']
+
+    left_side = expression[0]
+
+    # e.g. u'_'
+
+    symbol = left_side[1]
+
+    if symbol == '_':
+
+        return True
+
+    return False
+
+
 def parse(source):
     """Parse the source into a tree (i.e. list of list).
 
@@ -780,6 +797,18 @@ def eval(source, globals_={}, locals_={}):
 
         for current_expression in expressions[1:]:
 
+            if globals_.get('__IN_EVAL__', None) is None and not _is_referencing_underscore(current_expression):
+
+                # Reset '_'
+
+                globals_['_'] = None
+
+                locals_['_'] = None
+
+            if globals_.get('__IN_EVAL__', None) is None:
+
+                globals_['__IN_EVAL__'] = True
+
             temp_globals_ = copy.copy(globals_)
 
             temp_locals_ = copy.copy(locals_)
@@ -791,6 +820,18 @@ def eval(source, globals_={}, locals_={}):
         # 1 (i.e. N-1)
 
         if expressions:
+
+            if globals_.get('__IN_EVAL__', None) is None and not _is_referencing_underscore(expressions[0]):
+
+                # Reset '_'
+
+                globals_['_'] = None
+
+                locals_['_'] = None
+
+            if globals_.get('__IN_EVAL__', None) is None:
+
+                globals_['__IN_EVAL__'] = True
 
             result = __run(expressions[0], globals_, locals_, None)
 
@@ -831,5 +872,9 @@ def eval(source, globals_={}, locals_={}):
         # Set `return value` as `_`
 
         globals_['_'] = locals_['_'] = return_value
+
+        if globals_.get('__IN_EVAL__', None) is not None:
+
+            del globals_['__IN_EVAL__']
 
     return return_value
