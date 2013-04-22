@@ -41,6 +41,7 @@ except ImportError:
 
 import os
 import sys
+import copy
 
 
 # Local imports
@@ -74,315 +75,319 @@ class TestPythonect(unittest.TestCase):
 
         self.input = None
 
+        self.locals_ = {'__MAX_THREADS_PER_FLOW__': 2}
+
+        self.globals_ = {'__MAX_THREADS_PER_FLOW__': 2}
+
     def test_literal_hex(self):
 
-        self.assertEqual(pythonect.eval('0x01', {}, {}), 1)
+        self.assertEqual(pythonect.eval('0x01', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_sub_expr_literal_hex(self):
 
-        self.assertEqual(pythonect.eval('`0x01`', {}, {}), 1)
+        self.assertEqual(pythonect.eval('`0x01`', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_literal_bin(self):
 
-        self.assertEqual(pythonect.eval('0b1', {}, {}), 1)
+        self.assertEqual(pythonect.eval('0b1', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_literal_float(self):
 
-        self.assertEqual(pythonect.eval('1.0', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1.0', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_literal_int(self):
 
-        self.assertEqual(pythonect.eval('1', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_python_stmt_import(self):
 
-        self.assertEqual(pythonect.eval('import math', {}, {}), self.input)
+        self.assertEqual(pythonect.eval('import math', copy.copy(self.globals_), copy.copy(self.locals_)), self.input)
 
     def test_sub_expr_python_stmt_import(self):
 
-        self.assertEqual(pythonect.eval('`import math`', {}, {}), self.input)
+        self.assertEqual(pythonect.eval('`import math`', copy.copy(self.globals_), copy.copy(self.locals_)), self.input)
 
     def test_python_stmt_assignment(self):
 
-        self.assertEqual(pythonect.eval('x = 1', {}, {}), self.input)
+        self.assertEqual(pythonect.eval('x = 1', copy.copy(self.globals_), copy.copy(self.locals_)), self.input)
 
     def test_sub_expr_python_stmt_assignment(self):
 
-        self.assertEqual(pythonect.eval('`x = 1`', {}, {}), self.input)
+        self.assertEqual(pythonect.eval('`x = 1`', copy.copy(self.globals_), copy.copy(self.locals_)), self.input)
 
     def test_python_expr_int(self):
 
-        self.assertEqual(pythonect.eval('1 + 1', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 + 1', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_sub_expr_python_expr_int(self):
 
-        self.assertEqual(pythonect.eval('`1 + 1`', {}, {}), 2)
+        self.assertEqual(pythonect.eval('`1 + 1`', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_python_expr_str_1(self):
 
-        self.assertEqual(pythonect.eval('"Hello World"', {}, {}), "Hello World")
+        self.assertEqual(pythonect.eval('"Hello World"', copy.copy(self.globals_), copy.copy(self.locals_)), "Hello World")
 
     def test_sub_expr_python_expr_str_1(self):
 
-        self.assertEqual(pythonect.eval('`"Hello World"`', {}, {}), "Hello World")
+        self.assertEqual(pythonect.eval('`"Hello World"`', copy.copy(self.globals_), copy.copy(self.locals_)), "Hello World")
 
     def test_python_expr_str_2(self):
 
-        self.assertEqual(pythonect.eval("'Hello World'", {}, {}), "Hello World")
+        self.assertEqual(pythonect.eval("'Hello World'", copy.copy(self.globals_), copy.copy(self.locals_)), "Hello World")
 
     def test_python_expr_str_3(self):
 
-        self.assertEqual(pythonect.eval('"Hello \'W\'orld"', {}, {}), "Hello 'W'orld")
+        self.assertEqual(pythonect.eval('"Hello \'W\'orld"', copy.copy(self.globals_), copy.copy(self.locals_)), "Hello 'W'orld")
 
     def test_python_expr_str_4(self):
 
-        self.assertEqual(pythonect.eval("'Hello \"W\"orld'", {}, {}), 'Hello "W"orld')
+        self.assertEqual(pythonect.eval("'Hello \"W\"orld'", copy.copy(self.globals_), copy.copy(self.locals_)), 'Hello "W"orld')
 
     def test_python_expr_list(self):
 
-        self.assertEqual(pythonect.eval('[[1, 2, 3]]', {}, {}), [1, 2, 3])
+        self.assertEqual(pythonect.eval('[[1, 2, 3]]', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3])
 
     def test_sub_expr_python_expr_list(self):
 
-        self.assertEqual(pythonect.eval('`[[1, 2, 3]]`', {}, {}), [1, 2, 3])
+        self.assertEqual(pythonect.eval('`[[1, 2, 3]]`', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3])
 
     def test_python_true_expr_literal_eq_literal(self):
 
-        self.assertEqual(pythonect.eval('1 == 1', {}, {}), self.input)
+        self.assertEqual(pythonect.eval('1 == 1', copy.copy(self.globals_), copy.copy(self.locals_)), self.input)
 
     def test_sub_expr_python_true_expr_literal_eq_literal(self):
 
-        self.assertEqual(pythonect.eval('`1 == 1`', {}, {}), self.input)
+        self.assertEqual(pythonect.eval('`1 == 1`', copy.copy(self.globals_), copy.copy(self.locals_)), self.input)
 
     def test_python_false_expr_literal_neq_literal(self):
 
-        self.assertEqual(pythonect.eval('1 == 0', {}, {}), False)
+        self.assertEqual(pythonect.eval('1 == 0', copy.copy(self.globals_), copy.copy(self.locals_)), False)
 
     def test_python_true_expr_underscore_eq_underscore(self):
 
-        self.assertEqual(pythonect.eval('_ == _', {}, {}), self.input)
+        self.assertEqual(pythonect.eval('_ == _', copy.copy(self.globals_), copy.copy(self.locals_)), self.input)
 
     def test_python_false_expr_underscore_neq_repr_underscore(self):
 
-        self.assertEqual(pythonect.eval('_ == repr(_)', {}, {}), False)
+        self.assertEqual(pythonect.eval('_ == repr(_)', copy.copy(self.globals_), copy.copy(self.locals_)), False)
 
     def test_literal_int_async_none(self):
 
-        self.assertEqual(pythonect.eval('1 -> None', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1 -> None', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_literal_int_sync_none(self):
 
-        self.assertEqual(pythonect.eval('1 | None', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1 | None', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_literal_int_async_dict(self):
 
-        self.assertEqual(pythonect.eval('1 -> {1: "One", 2: "Two"}', {}, {}), "One")
+        self.assertEqual(pythonect.eval('1 -> {1: "One", 2: "Two"}', copy.copy(self.globals_), copy.copy(self.locals_)), "One")
 
     def test_literal_int_sync_dict(self):
 
-        self.assertEqual(pythonect.eval('1 | {1: "One", 2: "Two"}', {}, {}), "One")
+        self.assertEqual(pythonect.eval('1 | {1: "One", 2: "Two"}', copy.copy(self.globals_), copy.copy(self.locals_)), "One")
 
     def test_literal_str_async_autoload(self):
 
-        self.assertEqual(pythonect.eval('"Hello world" -> string.split', {}, {}), ["Hello", "world"])
+        self.assertEqual(pythonect.eval('"Hello world" -> string.split', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
 
     def test_literal_str_sync_autoload(self):
 
-        self.assertItemsEqual(pythonect.eval('"Hello world" | string.split', {}, {}), ["Hello", "world"])
+        self.assertItemsEqual(pythonect.eval('"Hello world" | string.split', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
 
     def test_literal_int_async_literal_int(self):
 
-        self.assertEqual(pythonect.eval('1 -> 1', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1 -> 1', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_literal_int_sync_literal_int(self):
 
-        self.assertEqual(pythonect.eval('1 | 1', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1 | 1', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_literal_int_async_literal_array_int_float(self):
 
-        self.assertItemsEqual(pythonect.eval('1 -> [int,float]', {}, {}), [1, 1.0])
+        self.assertItemsEqual(pythonect.eval('1 -> [int,float]', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1.0])
 
     def test_literal_int_sync_literal_array_int_float(self):
 
-        self.assertEqual(pythonect.eval('1 | [int,float]', {}, {}), [1, 1.0])
+        self.assertEqual(pythonect.eval('1 | [int,float]', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1.0])
 
     def test_python_stmt_assignment_async_literal_int(self):
 
-        self.assertEqual(pythonect.eval('[x = 0] -> 1', {}, {}), 1)
+        self.assertEqual(pythonect.eval('[x = 0] -> 1', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_python_stmt_assignment_sync_literal_int(self):
 
-        self.assertEqual(pythonect.eval('[x = 0] | 1', {}, {}), 1)
+        self.assertEqual(pythonect.eval('[x = 0] | 1', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_python_stmt_assignment_sync_variable(self):
 
-        self.assertEqual(pythonect.eval('[x = 0] | x', {}, {}), 0)
+        self.assertEqual(pythonect.eval('[x = 0] | x', copy.copy(self.globals_), copy.copy(self.locals_)), 0)
 
     def test_python_stmt_assignment_async_variable(self):
 
-        self.assertEqual(pythonect.eval('[x = 0] -> x', {}, {}), 0)
+        self.assertEqual(pythonect.eval('[x = 0] -> x', copy.copy(self.globals_), copy.copy(self.locals_)), 0)
 
     def test_literal_array_int_int_sync_none(self):
 
-        self.assertEqual(pythonect.eval('[1, 2] | None', {}, {}), [1, 2])
+        self.assertEqual(pythonect.eval('[1, 2] | None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_array_int_int_async_none(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, 2] -> None', {}, {}), [1, 2])
+        self.assertItemsEqual(pythonect.eval('[1, 2] -> None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_array_int_int_sync_dict(self):
 
-        self.assertEqual(pythonect.eval('[1, 2] | {1: "One", 2: "Two"}', {}, {}), ["One", "Two"])
+        self.assertEqual(pythonect.eval('[1, 2] | {1: "One", 2: "Two"}', copy.copy(self.globals_), copy.copy(self.locals_)), ["One", "Two"])
 
     def test_literal_array_int_int_async_dict(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, 2] -> {1: "One", 2: "Two"}', {}, {}), ["One", "Two"])
+        self.assertItemsEqual(pythonect.eval('[1, 2] -> {1: "One", 2: "Two"}', copy.copy(self.globals_), copy.copy(self.locals_)), ["One", "Two"])
 
     def test_literal_array_int_str_async_none(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, "Hello"] -> None', {}, {}), [1, "Hello"])
+        self.assertItemsEqual(pythonect.eval('[1, "Hello"] -> None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, "Hello"])
 
     def test_literal_array_int_str_sync_none(self):
 
-        self.assertEqual(pythonect.eval('[1, "Hello"] | None', {}, {}), [1, "Hello"])
+        self.assertEqual(pythonect.eval('[1, "Hello"] | None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, "Hello"])
 
     def test_literal_array_int_str_async_int(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, "Hello"] -> 1', {}, {}), [1, 1])
+        self.assertItemsEqual(pythonect.eval('[1, "Hello"] -> 1', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1])
 
     def test_literal_array_int_str_sync_int(self):
 
-        self.assertEqual(pythonect.eval('[1, "Hello"] | 1', {}, {}), [1, 1])
+        self.assertEqual(pythonect.eval('[1, "Hello"] | 1', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1])
 
     def test_literal_array_int_int_sync_literal_int(self):
 
-        self.assertEqual(pythonect.eval('[1, 2] | 1', {}, {}), [1, 1])
+        self.assertEqual(pythonect.eval('[1, 2] | 1', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1])
 
     def test_literal_array_int_int_async_literal_int(self):
 
-        self.assertEqual(pythonect.eval('[1, 2] -> 1', {}, {}), [1, 1])
+        self.assertEqual(pythonect.eval('[1, 2] -> 1', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1])
 
     def test_literal_array_int_int_sync_literal_array_int_int(self):
 
-        self.assertEqual(pythonect.eval('[1, 2] | [3, 4]', {}, {}), [3, 4, 3, 4])
+        self.assertEqual(pythonect.eval('[1, 2] | [3, 4]', copy.copy(self.globals_), copy.copy(self.locals_)), [3, 4, 3, 4])
 
     def test_literal_array_int_int_async_literal_array_int_int(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, 2] -> [3, 4]', {}, {}), [3, 3, 4, 4])
+        self.assertItemsEqual(pythonect.eval('[1, 2] -> [3, 4]', copy.copy(self.globals_), copy.copy(self.locals_)), [3, 3, 4, 4])
 
     def test_literal_int_async_stmt_single_return_value_function_async_single_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 -> def foobar(x): return x+1 -> foobar', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 -> def foobar(x): return x+1 -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_literal_int_async_stmt_single_return_value_function_sync_single_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 -> def foobar(x): return x+1 | foobar', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 -> def foobar(x): return x+1 | foobar', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_literal_int_sync_stmt_single_return_value_function_async_single_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 | def foobar(x): return x+1 -> foobar', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 | def foobar(x): return x+1 -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_literal_int_sync_stmt_single_return_value_function_sync_single_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 | def foobar(x): return x+1 | foobar', {}, {}), 2)
+        self.assertEqual(pythonect.eval('1 | def foobar(x): return x+1 | foobar', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_literal_int_async_stmt_multiple_return_value_function_async_multiple_return_value_function(self):
 
-        self.assertItemsEqual(pythonect.eval('1 -> def foobar(x): return [x,x+1] -> foobar', {}, {}), [1, 2])
+        self.assertItemsEqual(pythonect.eval('1 -> def foobar(x): return [x,x+1] -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_async_stmt_multiple_return_value_function_sync_multiple_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 -> def foobar(x): return [x,x+1] | foobar', {}, {}), [1, 2])
+        self.assertEqual(pythonect.eval('1 -> def foobar(x): return [x,x+1] | foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_sync_stmt_multiple_return_value_function_async_multiple_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 | def foobar(x): return [x,x+1] -> foobar', {}, {}), [1, 2])
+        self.assertEqual(pythonect.eval('1 | def foobar(x): return [x,x+1] -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_sync_stmt_multiple_return_value_function_sync_multiple_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 | def foobar(x): return [x,x+1] | foobar', {}, {}), [1, 2])
+        self.assertEqual(pythonect.eval('1 | def foobar(x): return [x,x+1] | foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_async_stmt_generator_return_value_function_async_generator_return_value_function(self):
 
-        self.assertItemsEqual(pythonect.eval('1 -> def foobar(x): yield x; yield x+1 -> foobar', {}, {}), [1, 2])
+        self.assertItemsEqual(pythonect.eval('1 -> def foobar(x): yield x; yield x+1 -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_async_stmt_generator_return_value_function_sync_generator_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 -> def foobar(x): yield x; yield x+1 | foobar', {}, {}), [1, 2])
+        self.assertEqual(pythonect.eval('1 -> def foobar(x): yield x; yield x+1 | foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_sync_stmt_generator_return_value_function_async_generator_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 | def foobar(x): yield x; yield x+1 -> foobar', {}, {}), [1, 2])
+        self.assertEqual(pythonect.eval('1 | def foobar(x): yield x; yield x+1 -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_sync_stmt_generator_return_value_function_sync_generator_return_value_function(self):
 
-        self.assertEqual(pythonect.eval('1 | def foobar(x): yield x; yield x+1 | foobar', {}, {}), [1, 2])
+        self.assertEqual(pythonect.eval('1 | def foobar(x): yield x; yield x+1 | foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_singlethread_program_async(self):
 
-        self.assertEqual(pythonect.eval('import threading -> x = threading.current_thread().name -> y = threading.current_thread().name -> x == y', {}, {}), None)
+        self.assertEqual(pythonect.eval('import threading -> x = threading.current_thread().name -> y = threading.current_thread().name -> x == y', copy.copy(self.globals_), copy.copy(self.locals_)), None)
 
     def test_singlethread_program_sync(self):
 
-        self.assertEqual(pythonect.eval('import threading | x = threading.current_thread().name | y = threading.current_thread().name | x == y', {}, {}), None)
+        self.assertEqual(pythonect.eval('import threading | x = threading.current_thread().name | y = threading.current_thread().name | x == y', copy.copy(self.globals_), copy.copy(self.locals_)), None)
 
     def test_multithread_program_async(self):
 
-        r_array = pythonect.eval('import threading -> [threading.current_thread().name, threading.current_thread().name]', {}, {})
+        r_array = pythonect.eval('import threading -> [threading.current_thread().name, threading.current_thread().name]', copy.copy(self.globals_), copy.copy(self.locals_))
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
     def test_multithread_program_sync(self):
 
-        r_array = pythonect.eval('import threading | [threading.current_thread().name, threading.current_thread().name]', {}, {})
+        r_array = pythonect.eval('import threading | [threading.current_thread().name, threading.current_thread().name]', copy.copy(self.globals_), copy.copy(self.locals_))
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
     @unittest.skipIf(_not_python27(), 'Current Python implementation does not support multiprocessing (buggy)')
     def test_multiprocess_program_async(self):
 
-        r_array = pythonect.eval('import threading -> [multiprocessing.current_process().pid &, multiprocessing.current_process().pid &]', {}, {})
+        r_array = pythonect.eval('import threading -> [multiprocessing.current_process().pid &, multiprocessing.current_process().pid &]', copy.copy(self.globals_), copy.copy(self.locals_))
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
-#        self.assertEqual(pythonect.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', {}, {}), 1)
+#        self.assertEqual(pythonect.eval('import multiprocessing -> start_pid = multiprocessing.current_process().pid -> start_pid -> str & -> current_pid = multiprocessing.current_process().pid -> 1 -> current_pid != start_pid', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     @unittest.skipIf(_not_python27(), 'Current Python implementation does not support multiprocessing (buggy)')
     def test_multiprocess_program_sync(self):
 
-        r_array = pythonect.eval('import multiprocessing | [multiprocessing.current_process().pid &, multiprocessing.current_process().pid &]', {}, {})
+        r_array = pythonect.eval('import multiprocessing | [multiprocessing.current_process().pid &, multiprocessing.current_process().pid &]', copy.copy(self.globals_), copy.copy(self.locals_))
 
         self.assertEqual(r_array[0] != r_array[1], True)
 
-#        self.assertEqual(pythonect.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', {}, {}), 1)
+#        self.assertEqual(pythonect.eval('import multiprocessing | start_pid = multiprocessing.current_process().pid | start_pid | str & | current_pid = multiprocessing.current_process().pid | 1 | current_pid != start_pid', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_pseudo_none_const_as_url(self):
 
-        self.assertEqual(pythonect.eval('def foobar(x): return x+1 -> 1 -> foobar@None', {}, {}), 2)
+        self.assertEqual(pythonect.eval('def foobar(x): return x+1 -> 1 -> foobar@None', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_pseudo_none_str_as_url(self):
 
-        self.assertEqual(pythonect.eval('def foobar(x): return x+1 -> 1 -> foobar@"None"', {}, {}), 2)
+        self.assertEqual(pythonect.eval('def foobar(x): return x+1 -> 1 -> foobar@"None"', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_pseudo_none_value_fcn_return_value_as_url(self):
 
-        self.assertEqual(pythonect.eval('def ret_none(): return None -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', {}, {}), 2)
+        self.assertEqual(pythonect.eval('def ret_none(): return None -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_pseudo_none_str_fcn_return_value_as_url(self):
 
-        self.assertEqual(pythonect.eval('def ret_none(): return "None" -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', {}, {}), 2)
+        self.assertEqual(pythonect.eval('def ret_none(): return "None" -> def foobar(x): return x+1 -> 1 -> foobar@ret_none()', copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     def test_pythonect_eval_fcn(self):
 
-        self.assertEqual(pythonect.eval("eval('1->1', {}, {})", {}, {}), 1)
+        self.assertEqual(pythonect.eval("eval('1->1', {}, {})", copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_python_eval_within_pythonect_program(self):
 
-        self.assertEqual(pythonect.eval("__eval__('1')", {}, {}), 1)
+        self.assertEqual(pythonect.eval("__eval__('1')", copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_void_function(self):
 
-        self.assertEqual(pythonect.eval("def void_foobar(): return 2 -> 1 -> void_foobar", {}, {}), 2)
+        self.assertEqual(pythonect.eval("def void_foobar(): return 2 -> 1 -> void_foobar", copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     ############################################################
     # Ticket numbers in this file can be looked up by visiting #
@@ -393,13 +398,13 @@ class TestPythonect(unittest.TestCase):
 
     def test_autloader_within_array(self):
 
-        self.assertItemsEqual(pythonect.eval('"Hello world" | [string.split]', {}, {}), ["Hello", "world"])
+        self.assertItemsEqual(pythonect.eval('"Hello world" | [string.split]', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
 
     # Bug #14
 
     def test_print_like_statement(self):
 
-        self.assertItemsEqual(pythonect.eval('range(1,10) -> print("Thread A")', {}, {}), [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        self.assertItemsEqual(pythonect.eval('range(1,10) -> print("Thread A")', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     def test_multiple_stateful_x_eq_5_statement(self):
 
@@ -445,7 +450,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_list_with_str_with_comma(self):
 
-        self.assertEqual(pythonect.eval('["Hello, world"]', {}, {}), 'Hello, world')
+        self.assertEqual(pythonect.eval('["Hello, world"]', copy.copy(self.globals_), copy.copy(self.locals_)), 'Hello, world')
 
     # Bug #27
 
@@ -454,7 +459,7 @@ class TestPythonect(unittest.TestCase):
 #
 #        try:
 #
-#            self.assertEqual(pythonect.eval('"Hello, world" -> [print, print &]', {}, {}), ['Hello, world', 'Hello, world'])
+#            self.assertEqual(pythonect.eval('"Hello, world" -> [print, print &]', copy.copy(self.globals_), copy.copy(self.locals_)), ['Hello, world', 'Hello, world'])
 #
 #        except OSError as e:
 #
@@ -466,7 +471,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_non_string_literals_in_list(self):
 
-        self.assertEqual(pythonect.eval('[1,2,3] -> _ + 1', {}, {}), [2, 3, 4])
+        self.assertEqual(pythonect.eval('[1,2,3] -> _ + 1', copy.copy(self.globals_), copy.copy(self.locals_)), [2, 3, 4])
 
     # Feature #35
 
@@ -474,33 +479,33 @@ class TestPythonect(unittest.TestCase):
 
         expressions = pythonect.parse('"Hello, world" -> 1 | 2')
 
-        self.assertEqual(pythonect.eval(expressions, {}, {}), 2)
+        self.assertEqual(pythonect.eval(expressions, copy.copy(self.globals_), copy.copy(self.locals_)), 2)
 
     # Enhancement #45
 
     def test_literal_dict_as_input(self):
 
-        self.assertEqual(pythonect.eval('{"foobar": "foobar"}', {}, {}), {"foobar": "foobar"})
+        self.assertEqual(pythonect.eval('{"foobar": "foobar"}', copy.copy(self.globals_), copy.copy(self.locals_)), {"foobar": "foobar"})
 
     def test_dict_as_return_value_as_input(self):
 
-        self.assertEqual(pythonect.eval("def foobar(): return {'foobar': 'foobar'} -> foobar() -> print", {}, {}), {"foobar": "foobar"})
+        self.assertEqual(pythonect.eval("def foobar(): return {'foobar': 'foobar'} -> foobar() -> print", copy.copy(self.globals_), copy.copy(self.locals_)), {"foobar": "foobar"})
 
     # Bug #48
 
     def test_print_B_in_ABC(self):
 
-        self.assertEqual(pythonect.eval('1 -> print "B" in "ABC"', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1 -> print "B" in "ABC"', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_print_2_is_2(self):
 
-        self.assertEqual(pythonect.eval('1 -> print 2 is 2', {}, {}), 1)
+        self.assertEqual(pythonect.eval('1 -> print 2 is 2', copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     # Bug #69
 
     def test_alt_print__fcn(self):
 
-        self.assertEqual(pythonect.eval('1 -> print', {}, {'print_': lambda x: 123}), 123)
+        self.assertEqual(pythonect.eval('1 -> print', copy.copy(self.globals_), {'print_': lambda x: 123}), 123)
 
     # Feature 70 (Freeze on Python 2.6 and Mac OS X Python 2.7.2)
     #
@@ -508,4 +513,4 @@ class TestPythonect(unittest.TestCase):
     #
     #    with self.assertRaisesRegexp(ValueError, 'Number of processes must be at least'):
     #
-    #        pythonect.eval('range(1, 3) -> _+1', {}, {'__MAX_THREADS_PER_FLOW__': 0})
+    #        pythonect.eval('range(1, 3) -> _+1', copy.copy(self.globals_), {'__MAX_THREADS_PER_FLOW__': 0})
