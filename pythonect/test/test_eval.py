@@ -408,9 +408,9 @@ class TestPythonect(unittest.TestCase):
 
     def test_multiple_stateful_x_eq_5_statement(self):
 
-        locals_ = {}
+        locals_ = copy.copy(self.locals_)
 
-        globals_ = {}
+        globals_ = copy.copy(self.globals_)
 
         pythonect.eval('xrange(1, 10) -> x = _', globals_, locals_)
 
@@ -424,9 +424,9 @@ class TestPythonect(unittest.TestCase):
 
     def test_stateful_x_eq_5_statement(self):
 
-        locals_ = {}
+        locals_ = copy.copy(self.locals_)
 
-        globals_ = {}
+        globals_ = copy.copy(self.globals_)
 
         pythonect.eval('x = 5', globals_, locals_)
 
@@ -444,7 +444,7 @@ class TestPythonect(unittest.TestCase):
 
         with self.assertRaisesRegexp(TypeError, 'takes exactly'):
 
-            pythonect.eval('1 -> socket.socket(socket.AF_INET, socket.SOCK_STREAM) -> _.connect("A","B")')
+            pythonect.eval('1 -> socket.socket(socket.AF_INET, socket.SOCK_STREAM) -> _.connect("A","B")', copy.copy(self.globals_), copy.copy(self.locals_))
 
     # Bug #21
 
