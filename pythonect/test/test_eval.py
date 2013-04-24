@@ -379,7 +379,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_pythonect_eval_fcn(self):
 
-        self.assertEqual(pythonect.eval("eval('1->1', {}, {})", copy.copy(self.globals_), copy.copy(self.locals_)), 1)
+        self.assertEqual(pythonect.eval("eval('1->1', {'__MAX_THREADS_PER_FLOW__': 2}, {'__MAX_THREADS_PER_FLOW__': 2})", copy.copy(self.globals_), copy.copy(self.locals_)), 1)
 
     def test_python_eval_within_pythonect_program(self):
 
