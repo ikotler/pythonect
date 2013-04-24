@@ -2,8 +2,13 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
-HEAD
-====
+What's New In Pythonect 0.5?
+============================
+
+*Release date: 24-Apr-2013*
+
+Core and builtins
+-----------------
 
 - Issue #71: Unable to run Pythonect in Script Mode
 
