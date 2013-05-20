@@ -150,7 +150,8 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
 def main(argv=sys.argv):
 
-    locals = {}
+    locals_ = {}
+    globals_ = {}
 
     verbose_levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 
@@ -191,17 +192,17 @@ def main(argv=sys.argv):
 
     if args.module:
 
-        locals = runpy.run_module(args.module)
+        locals_ = runpy.run_module(args.module)
 
     # Max threads per pipe
 
-    locals.update(__MAX_THREADS_PER_FLOW__=args.max_threads_per_flow)
+    locals_.update(__MAX_THREADS_PER_FLOW__=args.max_threads_per_flow)
 
     # Command line mode (i.e. ./pythonect -c "'Hello world' -> print")
 
     if args.command:
 
-        pythonect.eval(args.command[0], globals(), locals)
+        pythonect.eval(args.command[0], globals_, locals_)
 
     # Script-mode (i.e. ./pythonect script or #!/usr/bin/env pythonect)
 
@@ -231,7 +232,7 @@ def main(argv=sys.argv):
 
         banner = """Python %s\n[Pythonect %s] on %s\nType "help", "copyright", "credits" or "license" for more information.""" % (sys.version.split('\n')[0], pythonect.__version__, sys.platform)
 
-        PythonectInteractiveConsole(locals).interact(banner)
+        PythonectInteractiveConsole(locals_).interact(banner)
 
     return 0
 
