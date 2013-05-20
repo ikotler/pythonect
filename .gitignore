@@ -6,4 +6,4 @@
 _version*
 .coverage
 .noseids
-
+.DS_Store
