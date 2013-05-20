@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
         cmdclass={'build': Build},
 
-        test_suite='pythonect.test.get_tests',
+        test_suite='nose.collector',
 
         zip_safe=False
     )
