@@ -148,7 +148,7 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
                 print
 
 
-def main():
+def main(argv=sys.argv):
 
     locals = {}
 
@@ -160,7 +160,7 @@ def main():
 
     # Parse command-line arguments
 
-    parser = argparse.ArgumentParser(sys.argv)
+    parser = argparse.ArgumentParser(prog='pythonect')
 
     parser.add_argument('script', metavar='file', nargs='?', type=argparse.FileType('rt'), help='program read from script file')
     parser.add_argument('arg', metavar='arg', nargs='*', help='arguments passed to program in sys.argv[1:]')
@@ -171,7 +171,7 @@ def main():
     parser.add_argument('--module', '-m', metavar='mod', action='store', help='run library module as a script')
     parser.add_argument('--max-threads-per-flow', '-mt', metavar='N', default=multiprocessing.cpu_count() + 1, type=int, action='store', help='max threads per flow')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=argv[1:])
 
     # Setup logging level
 
@@ -179,11 +179,13 @@ def main():
 
     # Adjust sys.argv, make sys.argv[1] as sys.argv[0], sys.argv[2] as sys.argv[1] and etc.
 
-    sys.argv = sys.argv[1:]
+    if argv == sys.argv:
 
-    if not sys.argv:
+        argv = sys.argv[1:]
 
-        sys.argv = ['']
+        if not sys.argv:
+
+            argv = ['']
 
     # Module as script mode (i.e. python -m 'os')
 
