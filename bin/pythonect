@@ -178,6 +178,10 @@ def main(argv=sys.argv):
 
     logging.basicConfig(level=verbose_levels[args.verbose % 4], format="%(filename)10s:%(lineno)4d:%(message)s")
 
+    # Add current working directory to sys.path
+
+    sys.path.insert(0, os.getcwd())
+
     # Adjust sys.argv, make sys.argv[1] as sys.argv[0], sys.argv[2] as sys.argv[1] and etc.
 
     if argv == sys.argv:
@@ -223,10 +227,6 @@ def main(argv=sys.argv):
     # Interactive-mode (i.e. ./pythonect)
 
     if args.interactive:
-
-        # Add current working directory to sys.path
-
-        sys.path.insert(0, os.getcwd())
 
         # Pythonect's Banner (for -V, --version purposes)
 
