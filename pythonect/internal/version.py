@@ -42,7 +42,7 @@ def get_version():
 
         git_output = git.stdout.readlines()[0]
 
-        git_ver = re.match('^\w+(?P<MAJOR>\d+)\.(?P<MINOR>\d+)(\.(?P<MICRO>\d+)(\-(?P<POST>\d+))?)?', git_output)
+        git_ver = re.match('^\w+(?P<MAJOR>\d+)\.(?P<MINOR>\d+)(\.(?P<MICRO>\d+)(\-(?P<DEV>\d+))?)?', git_output)
 
         if git_ver is not None:
 
@@ -56,11 +56,11 @@ def get_version():
 
                 version = version + '.' + git_ver.group('MICRO')
 
-                if git_ver.groupdict('POST') is not None:
+                if git_ver.groupdict('DEV') is not None:
 
-                    # MAJOR.MINOR.MICRO-POST
+                    # MAJOR.MINOR.MICRO-DEV
 
-                    version = version + '.post' + git_ver.group('POST')
+                    version = version + '.dev' + git_ver.group('DEV')
 
     except Exception as e:
 
