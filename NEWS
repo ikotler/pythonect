@@ -2,6 +2,16 @@ Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
+HEAD
+====
+
+- Make Pythonect Interpreter Test-able (i.e. interpreter is now a Python module)
+
+- Add Tests for Pythonect Interpreter
+
+- Fix #72 (Again)
+
+
 What's New In Pythonect 0.5?
 ============================
 
