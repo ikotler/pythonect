@@ -26,22 +26,65 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Parse and execute Pythonect code"""
+import unittest
+import networkx
 
-import sys
 
-__version__ = '0.0.0dev0'
+# Local imports
 
-try:
+import pythonect.internal.parsers.p2y
 
-    from _version import __version__
 
-except ImportError as e:
+class TestPythonectScriptParser(unittest.TestCase):
 
-    __version__ = get_version()
+    def test_program_empty(self):
 
-if (sys.argv[0] != 'setup.py') or (sys.argv[0] == 'setup.py' and sys.argv[1] in ['test', 'nosetests']):
+        g = networkx.DiGraph()
 
-    # API
+        self.assertEqual(len(pythonect.internal.parsers.p2y.PythonectScriptParser().parse('').nodes()) == len(g.nodes()), True)
 
-    from internal.eval import eval, parse
+    def test_expr_atom(self):
+
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        self.assertEqual(len(pythonect.internal.parsers.p2y.PythonectScriptParser().parse('1').nodes()) == len(g.nodes()), True)
+
+    def test_even_expr_atom_op_expr(self):
+
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        g.add_node('2')
+
+        g.add_edge('1', '2')
+
+        self.assertEqual(len(pythonect.internal.parsers.p2y.PythonectScriptParser().parse('1 -> 1').edges()) == len(g.edges()), True)
+
+    def test_odd_expr_atom_op_expr(self):
+
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        g.add_node('2')
+
+        g.add_node('3')
+
+        g.add_edge('1', '2')
+
+        g.add_edge('2', '3')
+
+        self.assertEqual(len(pythonect.internal.parsers.p2y.PythonectScriptParser().parse('1 -> 1 -> 1').edges()) == len(g.edges()), True)
+
+    def test_program_expr_list(self):
+
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        g.add_node('2')
+
+        self.assertEqual(len(pythonect.internal.parsers.p2y.PythonectScriptParser().parse('1 , 2').nodes()) == len(g.nodes()), True)

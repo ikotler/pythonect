@@ -33,7 +33,7 @@ import __builtin__
 
 # Functions
 
-def print_(object):
+def print_(object_):
 
     import threading
 
@@ -49,15 +49,15 @@ def print_(object):
 
         if multiprocessing.current_process().name == 'MainProcess':
 
-            sys.stdout.write("<%s:%s> : %s\n" % (multiprocessing.current_process().name, threading.current_thread().name, object))
+            sys.stdout.write("<%s:%s> : %s\n" % (multiprocessing.current_process().name, threading.current_thread().name, object_))
 
         else:
 
-            sys.stdout.write("<PID #%d> : %s\n" % (multiprocessing.current_process().pid, object))
+            sys.stdout.write("<PID #%d> : %s\n" % (multiprocessing.current_process().pid, object_))
 
     except ImportError:
 
-            sys.stdout.write("<%s> : %s\n" % (threading.current_thread().name, object))
+            sys.stdout.write("<%s> : %s\n" % (threading.current_thread().name, object_))
 
     sys.stdout.flush()
 
@@ -70,21 +70,21 @@ def print_(object):
 
 # Classes
 
-class attributedcode(object):
+class expr(object):
 
-    def __init__(self, expression, attributes):
-
-        self.__attributes = attributes
+    def __init__(self, expression):
 
         self.__expression = expression
 
-    def get_expression(self):
+    def __repr__(self):
 
         return self.__expression
 
-    def get_attributes(self):
+    def __call__(self, globals_, locals_):
 
-        return self.__attributes
+        import eval
+
+        return eval.eval(self.__expression, globals_, locals_)
 
 
 class remotefunction(object):
@@ -162,72 +162,3 @@ class remotefunction(object):
             self.__remote_fcn = getattr(remote_srv, self.__name)
 
         return self.__remote_fcn(*call_args, **call_kwargs)
-
-
-class expr(object):
-
-    def __init__(self, expression):
-
-        self.__expression = expression
-
-    def __repr__(self):
-
-        return self.__expression
-
-    def __call__(self, globals_, locals_):
-
-        import eval
-
-        return eval.eval(self.__expression, globals_, locals_)
-
-
-class stmt(object):
-
-    def __init__(self, statement):
-
-        self.__statement = statement
-
-    def __repr__(self):
-
-        return self.__statement
-
-    def __call__(self, globals_, locals_):
-
-        # eval.eval() change's `_` value for `PythonectInteractiveConsole`.
-        # Thus, any statement that includes `expr` might change current `_`
-
-        # Save `_`
-
-        __original_input = globals_.get('_', None)
-
-        try:
-
-            exec self.__statement in globals_, locals_
-
-        except NameError as e:
-
-                try:
-
-                    import importlib
-
-                    # NameError: name 'os' is not defined
-
-                    mod_name = e.message.split()[1][1:-1]
-
-                    globals_.update({mod_name: importlib.import_module(mod_name)})
-
-                    exec self.__statement in globals_, locals_
-
-                except Exception as e1:
-
-                    # raise original Exception
-
-                    raise e
-
-        # Restore `_`
-
-        globals_['_'] = __original_input
-
-        # Pass-through
-
-        return globals_['_']

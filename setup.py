@@ -76,7 +76,7 @@ class Build(distutils.command.build.build):
 
 if __name__ == "__main__":
 
-    dependencies = ['ply>=3.4']
+    dependencies = ['networkx>=1.7', 'nose']
 
     major, minor = sys.version_info[:2]
 

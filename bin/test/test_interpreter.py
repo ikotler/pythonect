@@ -60,7 +60,7 @@ pythonect_interpreter = imp.load_source('pythonect_interpreter', BASE_DIR + os.s
 
 def _not_buffered():
 
-    return hasattr(sys.stdout, "getvalue") == False
+    return hasattr(sys.stdout, "getvalue") is False
 
 
 class TestPythonectInterpreter(unittest.TestCase):

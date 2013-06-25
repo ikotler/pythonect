@@ -27,33 +27,71 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import unittest
+import networkx
 import os
-import sys
 
 
 # Local imports
 
-import pythonect
+import pythonect.internal.parsers.vdx
 
 
-class TestPythonectParser(unittest.TestCase):
+# Consts
+
+BASE_DIR = os.path.join(os.path.dirname(__file__), os.pardir)
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+class TestPythonectVisioParser(unittest.TestCase):
 
     def test_program_empty(self):
 
-        self.assertEqual(pythonect.parse(''), [])
+        g = networkx.DiGraph()
+
+        self.assertEqual(len(pythonect.internal.parsers.vdx.PythonectVisioParser().parse(open(TEST_DIR + os.sep + 'vdx10_examples' + os.sep + 'program_empty.vdx').read()).nodes()) == len(g.nodes()), True)
 
     def test_expr_atom(self):
 
-        self.assertEqual(pythonect.parse('1'), [[[None, '1']]])
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        self.assertEqual(len(pythonect.internal.parsers.vdx.PythonectVisioParser().parse(open(TEST_DIR + os.sep + 'vdx10_examples' + os.sep + 'expr_atom.vdx').read()).nodes()) == len(g.nodes()), True)
 
     def test_even_expr_atom_op_expr(self):
 
-        self.assertEqual(pythonect.parse('1 -> 1'), [[['->', '1'], [None, '1']]])
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        g.add_node('2')
+
+        g.add_edge('1', '2')
+
+        self.assertEqual(len(pythonect.internal.parsers.vdx.PythonectVisioParser().parse(open(TEST_DIR + os.sep + 'vdx10_examples' + os.sep + 'even_expr_atom_op_expr.vdx').read()).edges()) == len(g.edges()), True)
 
     def test_odd_expr_atom_op_expr(self):
 
-        self.assertEqual(pythonect.parse('1 -> 1 -> 1'), [[['->', '1'], ['->', '1'], [None, '1']]])
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        g.add_node('2')
+
+        g.add_node('3')
+
+        g.add_edge('1', '2')
+
+        g.add_edge('2', '3')
+
+        self.assertEqual(len(pythonect.internal.parsers.vdx.PythonectVisioParser().parse(open(TEST_DIR + os.sep + 'vdx10_examples' + os.sep + 'odd_expr_atom_op_expr.vdx').read()).edges()) == len(g.edges()), True)
 
     def test_program_expr_list(self):
 
-        self.assertEqual(pythonect.parse('1 , 2'), [[[None, '1']], [[None, '2']]])
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        g.add_node('2')
+
+        self.assertEqual(len(pythonect.internal.parsers.vdx.PythonectVisioParser().parse(open(TEST_DIR + os.sep + 'vdx10_examples' + os.sep + 'program_expr_list.vdx').read()).nodes()) == len(g.nodes()), True)

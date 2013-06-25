@@ -212,7 +212,7 @@ def main(argv=sys.argv):
 
     if args.script:
 
-        pythonect.eval(args.script.read().replace('\\\n', ''), globals_, locals_)
+        pythonect.eval(args.script.read(), globals_, locals_)
 
         args.script.close()
 

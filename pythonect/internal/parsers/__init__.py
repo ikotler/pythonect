@@ -26,22 +26,61 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Parse and execute Pythonect code"""
-
+import glob
+import os
+import importlib
 import sys
 
-__version__ = '0.0.0dev0'
 
-try:
+class PythonectInputFileFormatParser(object):
 
-    from _version import __version__
+    def parse(self, source):
 
-except ImportError as e:
+        raise NotImplementedError("Subclasses should implement this!")
 
-    __version__ = get_version()
 
-if (sys.argv[0] != 'setup.py') or (sys.argv[0] == 'setup.py' and sys.argv[1] in ['test', 'nosetests']):
+def get_parsers(parsers_path):
 
-    # API
+    instances = []
 
-    from internal.eval import eval, parse
+    # For each directory in parsers path
+
+    for component_directory in parsers_path.split(os.path.pathsep):
+
+        # Add component directory to path
+
+        sys.path.insert(0, component_directory)
+
+        components_list = glob.glob(component_directory + '/*.py')
+
+        # For each *.py file in directory
+
+        for component_file in components_list:
+
+            component = os.path.splitext(os.path.basename(component_file))[0]
+
+            try:
+
+                current_module = importlib.import_module(component)
+
+                for name in dir(current_module):
+
+                    if not name.startswith('_'):
+
+                        obj = getattr(current_module, name)
+
+                        try:
+
+                            if obj != PythonectInputFileFormatParser and issubclass(obj, PythonectInputFileFormatParser):
+
+                                instances.append(obj())
+
+                        except TypeError:
+
+                            pass
+
+            except Exception:
+
+                pass
+
+    return instances

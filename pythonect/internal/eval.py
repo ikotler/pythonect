@@ -31,22 +31,25 @@ import threading
 import copy
 import logging
 import importlib
-import types
-import time
 import site
 import os
-import sys
 import multiprocessing
 import multiprocessing.dummy
 import multiprocessing.pool
-import functools
 import pickle
+import networkx
+import re
 
 
 # Local imports
 
-import parser
+import parsers
 import lang
+
+
+# Consts
+
+SUB_EXPRESSION = re.compile("`(?P<sub_expr>.*)`")
 
 
 # Global variables
@@ -54,24 +57,41 @@ import lang
 global_interpreter_lock = threading.Lock()
 
 
-class NoDaemonProcess(multiprocessing.Process):
+# Classes
 
-    # make 'daemon' attribute always return False
-    def _get_daemon(self):
+class _PythonectResult(object):
 
-        return False
+    def __init__(self, values):
 
-    def _set_daemon(self, value):
-
-        pass
-
-    daemon = property(_get_daemon, _set_daemon)
+        self.values = values
 
 
-class NoDaemonPool(multiprocessing.pool.Pool):
+class _PythonectLazyRunner(object):
 
-    Process = NoDaemonProcess
+    def __init__(self, node):
 
+        self.node = node
+
+    def go(self, graph, reduces):
+
+        reduced_value = []
+
+        # TODO: Merge dicts and not pick the 1st one
+
+        locals_ = reduces[self.node][0]['locals']
+
+        globals_ = reduces[self.node][0]['globals']
+
+        for values in reduces[self.node]:
+
+            reduced_value.append(values['last_value'])
+
+        locals_['_'] = globals_['_'] = reduced_value
+
+        return _run(graph, self.node, globals_, locals_, {'as_reduce': True}, None, False)
+
+
+# Functions
 
 def __isiter(object):
 
@@ -81,7 +101,7 @@ def __isiter(object):
 
         return True
 
-    except TypeError as e:
+    except TypeError:
 
         return False
 
@@ -105,23 +125,12 @@ def __pickle_safe_dict(locals_or_globals):
     return result
 
 
-def __create_default_pool(globals_, locals_):
+def __create_pool(globals_, locals_):
 
     return multiprocessing.dummy.Pool(locals_.get('__MAX_THREADS_PER_FLOW__', multiprocessing.cpu_count() + 1))
 
 
-def __create_pool(globals_, locals_):
-
-    # Process Pool?
-
-    if '__PROCESS__' in globals_ or '__PROCESS__' in locals_:
-
-        return NoDaemonPool(locals_.get('__MAX_PROCESSES_PER_FLOW__', None))
-
-    return __create_default_pool(globals_, locals_)
-
-
-def __resolve_and_fix_results(results_list):
+def __resolve_and_merge_results(results_list):
 
     resolved = []
 
@@ -144,488 +153,485 @@ def __resolve_and_fix_results(results_list):
     return resolved
 
 
-def __eval_current_atom(atom, locals_, globals_):
+def _run_next_virtual_nodes(graph, node, globals_, locals_, flags, pool, result):
 
-    # TODO: This is a hack to support instances, should be re-written. If atom is `literal` or `instance`, it should appear as a metadata/attribute
-
-    try:
-
-        object_or_objects = python.eval(atom, globals_, locals_)
-
-    except NameError as e:
-
-        try:
-
-            import importlib
-
-            # NameError: name 'os' is not defined
-            #  - OR -
-            # NameError: global name 'os' is not defined
-
-            mod_name = e.message[e.message.index("'") + 1:e.message.rindex("'")]
-
-            globals_.update({mod_name: importlib.import_module(mod_name)})
-
-            object_or_objects = python.eval(atom, globals_, locals_)
-
-        except Exception as e1:
-
-            raise e1
-
-    except TypeError as e:
-
-        # Due to eval()?
-
-        if (e.message == 'eval() arg 1 must be a string or code object'):
-
-            object_or_objects = atom
-
-        else:
-
-            raise e
-
-    return object_or_objects
-
-
-def __fix_str_form(item):
-    '''
-    [1, 'Hello'] -> eval() = [1, Hello] , this fixup Hello to be 'Hello' again
-    '''
-    if isinstance(item, basestring):
-
-        item = "'''" + item.replace("'", "\\'") + "'''"
-
-    return item
-
-
-def __run_resource_in_multi(operator, item, provider, expression, locals_, globals_):
-
-    globals_.update({'__ITERATE_LITERAL_ARRAYS__': not globals_['__ITERATE_LITERAL_ARRAYS__']})
-
-    # Synchronous
-
-    if operator == '|':
-
-        return provider.apply(eval, args=([[(operator, item)] + expression[1:]], globals_, locals_))
-
-    # Asynchronous
-
-    else:
-
-        return provider.apply_async(eval, args=([[(operator, item)] + expression[1:]], globals_, locals_))
-
-
-def __change_provider_in_multi(item, expression, operator, globals_, locals_):
-
-    (new_globals_, new_locals_) = python.eval(item.get_attributes())
-
-    # Update
-
-    globals_.update(new_globals_)
-
-    locals_.update(new_locals_)
-
-    # Unpack __builtins.__attributedcode()
-
-    expression = [(None, None), python.eval(item.get_expression())] + expression[1:]
-
-    # Overwrite `item` with current input
-
-    item = __fix_str_form(locals_.get('_', None))
-
-    return (item, expression, __create_pool(globals_, locals_))
-
-
-def __eval_multiple_objects(objects, operator, provider, expression, locals_, globals_):
-    '''
-    When objects is an appropriate iterable, it has handled as following:
-    [1,2,3] -> [a,b,c] =
-    Thread 1: 1 -> [a,b,c]
-    Thread 2: 2 -> [a,b,c]
-    ...
-    '''
+    operator = graph.node[node].get('OPERATOR', None)
 
     return_value = []
 
-    globals_values = []
+    not_safe_to_iter = False
 
-    locals_values = []
+    is_head_result = True
 
-    for item in objects:
+    head_result = None
 
-        # TODO: This is a hack to prevent from item to be confused as fcn call and raise NameError.
+    # "Hello, world" or {...}
 
-        item = __fix_str_form(item)
+    if isinstance(result, (basestring, dict)) or not __isiter(result):
 
-        temp_globals_ = copy.copy(globals_)
+        not_safe_to_iter = True
 
-        temp_locals_ = copy.copy(locals_)
+    # [[1]]
 
-        # Process? (i.e. 'Hello, world' -> [print, print &])
+    if isinstance(result, list) and len(result) == 1 and isinstance(result[0], list):
 
-        if isinstance(item, lang.attributedcode):
+        result = result[0]
 
-            item, expression, provider = __change_provider_in_multi(item, expression, operator, globals_, locals_)
+        not_safe_to_iter = True
 
-            temp_locals_ = __pickle_safe_dict(locals_)
+    # More nodes ahead?
 
-            temp_globals_ = __pickle_safe_dict(globals_)
+    if operator:
 
-        if not isinstance(provider, multiprocessing.pool.ThreadPool):
+        if not_safe_to_iter:
 
-            temp_globals_ = __pickle_safe_dict(copy.copy(globals_))
-
-            temp_locals_ = __pickle_safe_dict(copy.copy(locals_))
-
-        return_value.append(__run_resource_in_multi(operator, item, provider, expression, temp_locals_, temp_globals_))
-
-        locals_values.append(temp_locals_)
-
-        globals_values.append(temp_globals_)
-
-    # Finally, join all asynchronous resources (outside the objects loop)
-
-    provider.close()
-
-    provider.join()
-
-    # Resolve AsyncResult
-
-    return_value = __resolve_and_fix_results(return_value)
-
-#    if return_value and len(return_value) == 2 and isinstance(return_value[0], list) and isinstance(return_value[1], list):
-#
-#        # Convert [[(1, {}, {})], [(2, {}, {})]] to [(1, {}, {}), (2, {}, {})]
-#
-#        return reduce(lambda x, y: x + y, return_value)
-
-    if len(globals_values) != 1:
-
-        delta_globals_, delta_locals_ = __merge_all_globals_and_locals(globals_values[0], locals_values[0], globals_values[1:], {}, locals_values[1:], {})
-
-        locals_.clear()
-        globals_.clear()
-
-        locals_.update(delta_locals_)
-        globals_.update(delta_globals_)
-
-    else:
-
-        globals_, locals_ = temp_globals_, temp_locals_
-
-    return return_value
-
-
-def __apply_output_to_input(output, input_, locals_, globals_):
-
-    # Remote?
-
-    if isinstance(output, lang.remotefunction):
-
-        output.evaluate_host(globals_, locals_)
-
-    # Python Statement?
-
-    if isinstance(output, (lang.stmt, lang.expr)):
-
-        output = output(globals_, locals_)
-
-    else:
-
-        # Ignore "copyright", "credits", "license", and "help"
-
-        if isinstance(output, (site._Printer, site._Helper)):
-
-            output = output()
+            head_result = result
 
         else:
 
-            try:
+            # Originally this was implemented using result[0] and result[1:] but xrange() is not slice-able, thus, I have changed it to `for` with buffer for 1st result
 
-                output = output(input_)
+            for res_value in result:
 
-            except TypeError as e:
+                if is_head_result:
 
-                # i.e. TypeError: f() takes no arguments (1 given)
+                    is_head_result = False
 
-                if e.args[0].find('takes no arguments') != -1:
+                    head_result = res_value
 
-                    output = output()
+                    continue
 
-                else:
+                tmp_globals = copy.copy(globals_)
 
-                    raise e
+                tmp_locals = copy.copy(locals_)
 
-    return output
-
-
-def __handle_special_outputs(output, locals_, globals_, ignore_iterables):
-    '''
-    If 'output' is a function, apply it to '_' (the result of the last calculation).
-    If 'output' is a dictionary - use it as a switch.
-    If 'output' is True or None - pass "_" on.
-    If 'output' if False - stop the calculation.
-    '''
-    # Get current input_
-
-    input_ = locals_.get('_', None)
-
-    if input_ is None:
-
-        input_ = globals_.get('_', None)
-
-    # Instance? (e.g. function, instance of class that implements __call__)
-
-    if callable(output):
-
-        output = __apply_output_to_input(output, input_, locals_, globals_)
-
-        # Reset `ignore_iterables` if callable(), thus allowing a function return value to be iterated
-
-        ignore_iterables = [str, unicode, dict]
-
-    # Switch?
-
-    else:
-
-        if isinstance(output, dict):
-
-            # NOTE: Private case, dict as a start of flow
-
-            if input_ is not None:
-
-                # 1 -> {1: 'One', 2: 'Two'} = 'One'
-
-                output = output.get(input_, False)
-
-                if output is False:
-
-                    return (output, ignore_iterables, True)
-
-    # Special Values
-
-    if output is False:
-
-        # 1 -> False = <Terminate resource>
-
-        return (output, ignore_iterables, True)
-
-    if output is True:
-
-        # 1 -> True = 1
-
-        output = input_
-
-    if output is None:
-
-        # 1 -> None = 1
-
-        output = input_
-
-    #return, all is good (so stop_calculation = False).
-
-    return (output, ignore_iterables, False)
-
-
-def __eval_single_object(output, operator, provider, expression, locals_, globals_, ignore_iterables):
-
-    '''
-    Treat object_or_objects as a single object, and evaluate it directly.
-    The following outputs are "special":
-    If 'output' is a function, apply it to '_' (the result of the last calculation).
-    If 'output' is a dictionary - use it as a switch.
-    If 'output' is True or None - pass "_" on.
-    If 'output' if False - stop the calculation.
-    Otherwise, pass it on to the next atom or list of atoms.
-    '''
-
-    return_value = []
-
-    globals_values = []
-
-    locals_values = []
-
-    output, ignore_iterables, stop_calculation = __handle_special_outputs(output, locals_, globals_, ignore_iterables)
-
-    if stop_calculation is True:
-
-        return [False]
-
-    # `output` is array or discrete?
-
-    if not isinstance(output, tuple(ignore_iterables)) and __isiter(output):
-
-        # Iterate `output`
-
-        for item in output:
-
-            globals_['_'] = locals_['_'] = item
-
-            temp_locals_ = copy.copy(locals_)
-
-            temp_globals_ = copy.copy(globals_)
-
-            locals_values.append(temp_locals_)
-
-            globals_values.append(temp_globals_)
-
-            # Call next atom in expression with `item` as `input`
-
-            if expression[1:]:
+                tmp_globals['_'] = tmp_locals['_'] = res_value
 
                 # Synchronous
 
                 if operator == '|':
 
-                    current_return_value = provider.apply(__run, args=(expression[1:], temp_globals_, temp_locals_, True))
+                    return_value.append(pool.apply(_run, args=(graph, node, tmp_globals, tmp_locals, {}, None, True)))
 
                 # Asynchronous
 
-                else:
+                if operator == '->':
 
-                    current_return_value = provider.apply_async(__run, args=(expression[1:], temp_globals_, temp_locals_, True))
+                    return_value.append(pool.apply_async(_run, args=(graph, node, tmp_globals, tmp_locals, {}, None, True)))
 
-                return_value.append(current_return_value)
+        tmp_globals = copy.copy(globals_)
 
-            else:
+        tmp_locals = copy.copy(locals_)
 
-                return_value.append(item)
+        tmp_globals['_'] = tmp_locals['_'] = head_result
+
+        return_value.insert(0, _run(graph, node, tmp_globals, tmp_locals, {}, None, True))
+
+        pool.close()
+
+        pool.join()
+
+        pool.terminate()
+
+        return_value = __resolve_and_merge_results(return_value)
+
+    # Loopback
 
     else:
 
-        temp_locals_ = copy.copy(locals_)
+        # AS IS
 
-        temp_globals_ = copy.copy(globals_)
+        if not_safe_to_iter:
 
-        locals_values.append(temp_locals_)
+            return_value = [result]
 
-        globals_values.append(temp_globals_)
-
-        # Same resource, next atom
-
-        globals_['_'] = locals_['_'] = output
-
-        if expression[1:]:
-
-            globals_.update({'__ITERATE_LITERAL_ARRAYS__': True})
-
-            # Call next atom in expression with `output` as `input`
-
-            if isinstance(provider, multiprocessing.pool.ThreadPool):
-
-                # Recycle worker
-
-                return __run(expression[1:], globals_, locals_, provider)
-
-            # Call provider.apply_async to evaluate next atom
-
-            else:
-
-                # NOTE: Provider changing effect is only lasting *1* call, thus, reverting to default after this call
-
-                return_value.append(provider.apply_async(__run, args=(expression[1:], __pickle_safe_dict(temp_globals_), __pickle_safe_dict(temp_locals_), None)))
+        # Iterate for all possible *return values*
 
         else:
 
-            return_value.append(output)
+            for res_value in result:
 
-    # Join any async resources before returning
+                return_value.append(res_value)
 
-    provider.close()
+            # Unbox
 
-    provider.join()
+            if len(return_value) == 1:
 
-    return_value = __resolve_and_fix_results(return_value)
-
-#    # Convert [[(1, {}, {})]] to [(1, {}, {})]
-#
-#    if return_value and len(return_value) == 1 and isinstance(return_value[0], list):
-#
-#        return_value = return_value[0]
-
-    if len(globals_values) != 1:
-
-        globals_, locals_ = __merge_all_globals_and_locals(temp_globals_, temp_locals_, globals_values[1:], {}, locals_values[1:], {})
-
-    else:
-
-        globals_, locals_ = temp_globals_, temp_locals_
+                return_value = return_value[0]
 
     return return_value
 
 
-def __change_provider_in_single(expression, operator, globals_, locals_):
+def __import_module_from_exception(exception, globals_):
 
-    '''
-    '''
+    # NameError: name 'os' is not defined
+    #  - OR -
+    # NameError: global name 'os' is not defined
 
-    future_object = python.eval(expression[1][1], globals_, locals_)
+    mod_name = exception.message[exception.message.index("'") + 1:exception.message.rindex("'")]
 
-    (new_globals_, new_locals_) = python.eval(future_object.get_attributes())
-
-    # Update
-
-    globals_.update(new_globals_)
-
-    locals_.update(new_locals_)
-
-    # Unpack __builtins.__attributedcode() (inc. explicit explicit to `operator`)
-
-    expression[1] = python.eval(future_object.get_expression())
-
-    return (expression, __create_pool(globals_, locals_))
+    globals_.update({mod_name: importlib.import_module(mod_name)})
 
 
-def __run(expression, globals_, locals_, provider=None):
+def __pythonect_preprocessor(current_value):
 
-    # Setup
+    current_value = current_value.strip()
 
-    resources = []
+    flags = {'spawn_as_process': False, 'spawn_as_reduce': False}
 
-    globals_values = []
+    # foobar(_!)
 
-    locals_values = []
+    if current_value.find('_!') != -1:
 
-    (operator, atom) = expression[0]
+        current_value = current_value.replace('_!', '_')
 
-    changed_provider = False
+        flags['spawn_as_reduce'] = True
 
-    ignore_iterables = [str, unicode, dict]
+    # foobar &
+
+    if current_value.endswith('&'):
+
+        current_value = current_value[:-1]
+
+        flags['spawn_as_process'] = True
+
+    # foobar@xmlrpc://...
+
+    for function_address in re.findall('.*\@.*', current_value):
+
+        (fcn_name, fcn_host) = function_address.split('@')
+
+        left_parenthesis = fcn_name.find('(')
+
+        right_parenthesis = fcn_name.find(')')
+
+        # foobar(1,2,3)@xmlrpc://...
+
+        if left_parenthesis > -1 and right_parenthesis > -1:
+
+            # `1,2,3`
+
+            fcn_args = fcn_name[left_parenthesis + 1:right_parenthesis]
+
+            # `foobar`
+
+            fcn_name = fcn_name.split('(')[0]
+
+            current_value = current_value.replace(function_address, '__builtins__.remotefunction(\'' + fcn_name + '\',\'' + fcn_host + '\',' + fcn_args + ')')
+
+        # foobar@xmlrpc://...
+
+        else:
+
+            current_value = current_value.replace(function_address, '__builtins__.remotefunction(\'' + fcn_name + '\',\'' + fcn_host + '\')')
+
+    # foobar(`1 -> _+1`)
+
+    current_value = SUB_EXPRESSION.sub("__builtins__.expr(\'\g<sub_expr>\')(globals(), locals())", current_value)
+
+    # Replace `print` with `print_`
+
+    if current_value == 'print':
+
+        current_value = 'print_'
+
+    if current_value.startswith('print'):
+
+        current_value = 'print_(' + current_value[5:] + ')'
+
+    return current_value, flags
+
+
+def __node_main(current_value, last_value, globals_, locals_):
 
     return_value = None
 
-    iterate_literal_arrays = globals_['__ITERATE_LITERAL_ARRAYS__']
+    try:
 
-    if not iterate_literal_arrays:
+        ###################################
+        # Try to eval()uate current_value #
+        ###################################
 
-        ignore_iterables = ignore_iterables + [list, tuple]
+        try:
 
-    if not provider:
+            return_value = python.eval(current_value, globals_, locals_)
 
-        provider = __create_default_pool(globals_, locals_)
+        # Autoloader Try & Catch
 
-    # Thread or Process?
+        except NameError as e:
 
-    if expression[1:] and expression[1][1].startswith('__builtins__.attributedcode'):
+            try:
 
-        (expression, provider) = __change_provider_in_single(expression, operator, globals_, locals_)
+                __import_module_from_exception(e, globals_)
 
-        locals_ = __pickle_safe_dict(locals_)
+                return_value = python.eval(current_value, globals_, locals_)
 
-        globals_ = __pickle_safe_dict(globals_)
+            except Exception as e1:
 
-    # Evaluate current atom, then either evaluate each element of the iterable separately,
-    # or treat it as a single block.
+                raise e1
 
-    object_or_objects = __eval_current_atom(atom, locals_, globals_)
+        # Current value is already Python Object
 
-    if not isinstance(object_or_objects, tuple(ignore_iterables)) and __isiter(object_or_objects):
+        except TypeError as e:
 
-        return_value = __eval_multiple_objects(object_or_objects, operator, provider, expression, locals_, globals_)
+            # Due to eval()?
+
+            if (e.message == 'eval() arg 1 must be a string or code object'):
+
+                return_value = current_value
+
+            else:
+
+                raise e
+
+        ##########################
+        # eval() Post Processing #
+        ##########################
+
+        if isinstance(return_value, lang.remotefunction):
+
+            return_value.evaluate_host(globals_, locals_)
+
+        if isinstance(return_value, dict):
+
+            if last_value is not None:
+
+                return_value = return_value.get(last_value, False)
+
+        if return_value is None or (isinstance(return_value, bool) and return_value is True):
+
+            return_value = last_value
+
+        if callable(return_value):
+
+            # Ignore "copyright", "credits", "license", and "help"
+
+            if isinstance(return_value, (site._Printer, site._Helper)):
+
+                return_value = return_value()
+
+            else:
+
+                try:
+
+                    return_value = return_value(last_value)
+
+                except TypeError as e:
+
+                    if e.args[0].find('takes no arguments') != -1:
+
+                        return_value = return_value()
+
+                    else:
+
+                        raise e
+
+                if return_value is None:
+
+                    return_value = last_value
+
+    except SyntaxError as e:
+
+        ##################################
+        # Try to exec()ute current_value #
+        ##################################
+
+        try:
+
+            exec current_value in globals_, locals_
+
+        # Autoloader Try & Catch
+
+        except NameError as e:
+
+            try:
+
+                __import_module_from_exception(e, globals_)
+
+                exec current_value in globals_, locals_
+
+            except Exception as e1:
+
+                raise e1
+
+        return_value = last_value
+
+    return return_value
+
+
+def _run_next_graph_nodes(graph, node, globals_, locals_, pool):
+
+    operator = graph.node[node].get('OPERATOR', None)
+
+    nodes_return_value = []
+
+    return_value = None
+
+    # False? Terminate Flow.
+
+    if isinstance(locals_['_'], bool) and locals_['_'] is False:
+
+        return False
+
+    if operator:
+
+        #   -->  (a)
+        #   --> / | \
+        #    (b) (c) (d)
+        #       \ | /
+        #        (e)
+
+        next_nodes = sorted(graph.successors(node))
+
+        # N-1
+
+        for next_node in next_nodes[1:]:
+
+            # Synchronous
+
+            if operator == '|':
+
+                nodes_return_value.append(pool.apply(_run, args=(graph, next_node, globals_, locals_, {}, None, False)))
+
+            # Asynchronous
+
+            if operator == '->':
+
+                nodes_return_value.append(pool.apply_async(_run, args=(graph, next_node, globals_, locals_, {}, None, False)))
+
+        # 1
+
+        nodes_return_value.insert(0, _run(graph, next_nodes[0], globals_, locals_, {}, None, False))
+
+        pool.close()
+
+        pool.join()
+
+        pool.terminate()
+
+        return_value = __resolve_and_merge_results(nodes_return_value)
 
     else:
 
-        return_value = __eval_single_object(object_or_objects, operator, provider, expression, locals_, globals_, ignore_iterables)
+        #        (a)
+        #       / | \
+        #    (b) (c) (d)
+        #       \ | /
+        #    --> (e)
+
+        return_value = locals_['_']
+
+    return return_value
+
+
+def __apply_current(func, args=(), kwds={}):
+
+    return func(*args, **kwds)
+
+
+def _run(graph, node, globals_, locals_, flags, pool=None, is_virtual_node=False):
+
+    return_value = None
+
+    if not pool:
+
+        pool = __create_pool(globals_, locals_)
+
+    if is_virtual_node:
+
+        #   `[1,2,3] -> print`
+        #
+        #       =
+        #
+        #   ([1,2,3])
+        #       |
+        #    (print)
+        #
+        #       =
+        #
+        #   ([1,2,3])
+        #   /   |   \
+        #  {1} {2} {3} <-- virtual node
+        #   \   |   /
+        #    (print)
+
+        # Call original `node` successors with `_` set as `virtual_node_value`
+
+        return_value = _run_next_graph_nodes(graph, node, globals_, locals_, pool)
+
+    else:
+
+        #   `[1,2,3] -> print`
+        #
+        #       =
+        #
+        #   ([1,2,3])
+        #       |
+        #    (print)
+        #
+        #       =
+        #
+        #   ([1,2,3]) <-- node
+        #   /   |   \
+        #  {1} {2} {3}
+        #   \   |   /
+        #    (print)
+
+        current_value = graph.node[node]['CONTENT']
+
+        last_value = globals_.get('_', locals_.get('_', None))
+
+        runner = __apply_current
+
+        input_value = None
+
+        code_flags = {}
+
+        # Code or Literal?
+
+        if not current_value.startswith('"') and not current_value.startswith("'") and not current_value[0] in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+
+            # Preprocess Code
+
+            try:
+
+                input_value, code_flags = __pythonect_preprocessor(current_value)
+
+            except:
+
+                # AS IS (Already Python Object)
+
+                input_value = current_value
+
+            # Run as Reduce?
+
+            if code_flags.get('spawn_as_reduce', False) and flags.get('as_reduce', False) is False:
+
+                return _PythonectResult({'node': node, 'input_value': input_value, 'last_value': last_value, 'locals': locals_, 'globals': globals_})
+
+            # Run as a New Process?
+
+            if code_flags.get('spawn_as_process', False):
+
+                runner = multiprocessing.Pool(1).apply
+
+                globals_ = __pickle_safe_dict(globals_)
+
+                locals_ = __pickle_safe_dict(locals_)
+
+        else:
+
+            # Literal
+
+            input_value = current_value
+
+        # Run Code
+
+        result = runner(__node_main, args=(input_value, last_value, globals_, locals_))
+
+        # Call self with each result value as `virtual_node`
+
+        return_value = _run_next_virtual_nodes(graph, node, globals_, locals_, flags, pool, result)
 
     return return_value
 
@@ -668,55 +674,9 @@ def __extend_builtins(globals_):
     return globals_
 
 
-def __merge_dicts(d1, d2, ignore_keys):
+def _is_referencing_underscore(graph, node):
 
-    result = dict(d1)
-
-    for k, v in d2.iteritems():
-
-        if k not in ignore_keys:
-
-            if k in result:
-
-                if result[k] != v:
-
-                    # TODO: Is this the best way to handle multiple/different v`s of k?
-
-                    del result[k]
-
-                    ignore_keys.update({k: True})
-
-            else:
-
-                result[k] = v
-
-    return result
-
-
-def __merge_all_globals_and_locals(current_globals, current_locals, globals_list=[], ignore_globals_keys={}, locals_list=[], ignore_locals_keys={}):
-
-    current_globals = __merge_dicts(current_globals, globals_list.pop(), ignore_globals_keys)
-
-    current_locals = __merge_dicts(current_locals, locals_list.pop(), ignore_locals_keys)
-
-    if not globals_list or not locals_list:
-
-        return current_globals, current_locals
-
-    return __merge_all_globals_and_locals(current_globals, current_locals, globals_list, ignore_globals_keys, locals_list, ignore_locals_keys)
-
-
-def _is_referencing_underscore(expression):
-
-    # e.g. [u'->', u'_']
-
-    left_side = expression[0]
-
-    # e.g. u'_'
-
-    symbol = left_side[1]
-
-    if symbol == '_':
+    if graph.node[node]['CONTENT'] == '_':
 
         return True
 
@@ -724,26 +684,40 @@ def _is_referencing_underscore(expression):
 
 
 def parse(source):
-    """Parse the source into a tree (i.e. list of list).
+    """Parse the source into a directed graph (i.e. networkx.DiGraph)
 
     Args:
         source: A string representing a Pythonect code.
 
     Returns:
-        A tree (i.e. list of list) of Pythonect symbols.
+        A directed graph (i.e. networkx.DiGraph) of Pythonect symbols.
 
     Raises:
         SyntaxError: An error occurred parsing the code.
     """
 
-    return parser.Parser().parse(source)
+    graph = last_graph = None
+
+    for parser in parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(parsers.__file__), '..', 'parsers'))):
+
+        graph = parser.parse(source)
+
+        if graph is not None:
+
+            last_graph = graph
+
+    if graph is None and last_graph is not None:
+
+        graph = last_graph
+
+    return graph
 
 
 def eval(source, globals_={}, locals_={}):
     """Evaluate Pythonect code in the context of globals and locals.
 
     Args:
-        source: A string representing a Pythonect code or a tree as
+        source: A string representing a Pythonect code or a networkx.DiGraph() as
             returned by parse()
         globals: A dictionary.
         locals: Any mapping.
@@ -761,23 +735,27 @@ def eval(source, globals_={}, locals_={}):
 
     if source != "pass":
 
+        return_value = []
+
         return_values = []
 
         globals_values = []
 
         locals_values = []
 
-        prog_return_blocks = None
-
         tasks = []
 
-        if isinstance(source, list):
+        reduces = {}
 
-            expressions = source
+        if not isinstance(source, networkx.DiGraph):
+
+            graph = parse(source)
 
         else:
 
-            expressions = parse(source)
+            graph = source
+
+        root_nodes = sorted([node for node, degree in graph.in_degree().items() if degree == 0])
 
         # Extend Python's __builtin__ with Pythonect's `lang`
 
@@ -785,25 +763,21 @@ def eval(source, globals_={}, locals_={}):
 
         # Default input
 
-        if start_globals_.get('_', None) is None:
-
-            start_globals_['_'] = locals_.get('_', None)
+        start_globals_['_'] = start_globals_.get('_', locals_.get('_', None))
 
         # Execute Pythonect program
 
         pool = __create_pool(globals_, locals_)
 
-        # 2 ... N
+        # N-1
 
-        for current_expression in expressions[1:]:
+        for root_node in root_nodes[1:]:
 
-            if globals_.get('__IN_EVAL__', None) is None and not _is_referencing_underscore(current_expression):
+            if globals_.get('__IN_EVAL__', None) is None and not _is_referencing_underscore(graph, root_node):
 
                 # Reset '_'
 
-                globals_['_'] = None
-
-                locals_['_'] = None
+                globals_['_'] = locals_['_'] = None
 
             if globals_.get('__IN_EVAL__', None) is None:
 
@@ -813,37 +787,35 @@ def eval(source, globals_={}, locals_={}):
 
             temp_locals_ = copy.copy(locals_)
 
-            task_result = pool.apply_async(__run, args=(current_expression, temp_globals_, temp_locals_, None))
+            task_result = pool.apply_async(_run, args=(graph, root_node, temp_globals_, temp_locals_, {}, None, False))
 
             tasks.append((task_result, temp_locals_, temp_globals_))
 
-        # 1 (i.e. N-1)
+        # 1
 
-        if expressions:
+        if globals_.get('__IN_EVAL__', None) is None and not _is_referencing_underscore(graph, root_nodes[0]):
 
-            if globals_.get('__IN_EVAL__', None) is None and not _is_referencing_underscore(expressions[0]):
+            # Reset '_'
 
-                # Reset '_'
+            globals_['_'] = locals_['_'] = None
 
-                globals_['_'] = None
+        if globals_.get('__IN_EVAL__', None) is None:
 
-                locals_['_'] = None
+            globals_['__IN_EVAL__'] = True
 
-            if globals_.get('__IN_EVAL__', None) is None:
+        result = _run(graph, root_nodes[0], globals_, locals_, {}, None, False)
 
-                globals_['__IN_EVAL__'] = True
+        # 1
 
-            result = __run(expressions[0], globals_, locals_, None)
+        for expr_return_value in result:
 
-            for expr_return_value in result:
+            globals_values.append(globals_)
 
-                globals_values.append(globals_)
+            locals_values.append(locals_)
 
-                locals_values.append(locals_)
+            return_values.append([expr_return_value])
 
-                return_values.append(expr_return_value)
-
-        # (2 ... N)
+        # N-1
 
         for (task_result, task_locals_, task_globals_) in tasks:
 
@@ -853,7 +825,45 @@ def eval(source, globals_={}, locals_={}):
 
             globals_values.append(task_globals_)
 
-        return_value = return_values
+        # Reduce + _PythonectResult Grouping
+
+        for item in return_values:
+
+            # Is there _PythonectResult in item list?
+
+            for sub_item in item:
+
+                if isinstance(sub_item, _PythonectResult):
+
+                    # 1st Time?
+
+                    if sub_item.values['node'] not in reduces:
+
+                        reduces[sub_item.values['node']] = []
+
+                        # Add Place holder to mark the position in the return value list
+
+                        return_value.append(_PythonectLazyRunner(sub_item.values['node']))
+
+                    reduces[sub_item.values['node']] = reduces[sub_item.values['node']] + [sub_item.values]
+
+                else:
+
+                    return_value.append(sub_item)
+
+        # Any _PythonectLazyRunner's?
+
+        if reduces:
+
+            for return_item_idx in xrange(0, len(return_value)):
+
+                if isinstance(return_value[return_item_idx], _PythonectLazyRunner):
+
+                    # Swap list[X] with list[X.go(reduces)]
+
+                    return_value[return_item_idx] = pool.apply_async(return_value[return_item_idx].go, args=(graph, reduces))
+
+            return_value = __resolve_and_merge_results(return_value)
 
         # [...] ?
 
@@ -867,7 +877,7 @@ def eval(source, globals_={}, locals_={}):
 
             # Update globals_ and locals_
 
-            globals_, locals_ = __merge_all_globals_and_locals(globals_, locals_, globals_values, {}, locals_values, {})
+#            globals_, locals_ = __merge_all_globals_and_locals(globals_, locals_, globals_values, {}, locals_values, {})
 
         # Set `return value` as `_`
 
@@ -876,5 +886,11 @@ def eval(source, globals_={}, locals_={}):
         if globals_.get('__IN_EVAL__', None) is not None:
 
             del globals_['__IN_EVAL__']
+
+        pool.close()
+
+        pool.join()
+
+        pool.terminate()
 
     return return_value

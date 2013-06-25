@@ -147,9 +147,11 @@ class TestPythonect(unittest.TestCase):
 
         self.assertEqual(pythonect.eval('[[1, 2, 3]]', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3])
 
-    def test_sub_expr_python_expr_list(self):
-
-        self.assertEqual(pythonect.eval('`[[1, 2, 3]]`', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3])
+#   TODO: Supported in Pythonect < 0.6 ; is worth maintaining in Pythonect 0.6+?
+#
+#    def test_sub_expr_python_expr_list(self):
+#
+#       self.assertEqual(pythonect.eval('`[[1, 2, 3]]`', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3])
 
     def test_python_true_expr_literal_eq_literal(self):
 
