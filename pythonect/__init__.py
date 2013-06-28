@@ -38,7 +38,9 @@ try:
 
 except ImportError as e:
 
-    __version__ = get_version()
+	from internal.version import get_version
+
+	__version__ = get_version()
 
 if (sys.argv[0] != 'setup.py') or (sys.argv[0] == 'setup.py' and sys.argv[1] in ['test', 'nosetests']):
 
