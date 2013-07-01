@@ -696,19 +696,17 @@ def parse(source):
         SyntaxError: An error occurred parsing the code.
     """
 
-    graph = last_graph = None
+    graph = networkx.DiGraph()
 
     for parser in parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(parsers.__file__), '..', 'parsers'))):
 
-        graph = parser.parse(source)
+        tmp_graph = parser.parse(source)
 
-        if graph is not None:
+        if tmp_graph is not None:
 
-            last_graph = graph
+            if len(tmp_graph.nodes()) > len(graph.nodes()):
 
-    if graph is None and last_graph is not None:
-
-        graph = last_graph
+                graph = tmp_graph
 
     return graph
 
