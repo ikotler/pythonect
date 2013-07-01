@@ -73,16 +73,23 @@ class TestPythonectInterpreter(unittest.TestCase):
         self.assertRegexpMatches(sys.stdout.getvalue().strip(), '.*Hello, world.*')
 
     @unittest.skipIf(_not_buffered(), 'sys.stdout is not buffered')
-    def test_script_mode(self):
+    def test_script_mode_p2y(self):
 
         pythonect_interpreter.main(argv=shlex.split('pythonect ' + TEST_DIR + os.sep + 'helloworld.p2y'))
 
         self.assertRegexpMatches(sys.stdout.getvalue().strip(), '.*Hello, world.*')
 
     @unittest.skipIf(_not_buffered(), 'sys.stdout is not buffered')
+    def test_script_mode_dia(self):
+
+        pythonect_interpreter.main(argv=shlex.split('pythonect ' + TEST_DIR + os.sep + 'helloworld.dia'))
+
+        self.assertRegexpMatches(sys.stdout.getvalue().strip(), '.*Hello, world.*')
+
+    @unittest.skipIf(_not_buffered(), 'sys.stdout is not buffered')
     def test_module_mode(self):
 
-        pythonect_interpreter.main(argv=shlex.split('pythonect ' + TEST_DIR + os.sep + 'helloworld.p2y'))
+        pythonect_interpreter.main(argv=shlex.split('pythonect -m foobar'))
 
         self.assertRegexpMatches(sys.stdout.getvalue().strip(), '.*Hello, world.*')
 
