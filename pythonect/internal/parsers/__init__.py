@@ -41,7 +41,7 @@ class PythonectInputFileFormatParser(object):
 
 def get_parsers(parsers_path):
 
-    instances = []
+    parsers = {}
 
     # For each directory in parsers path
 
@@ -73,7 +73,9 @@ def get_parsers(parsers_path):
 
                             if obj != PythonectInputFileFormatParser and issubclass(obj, PythonectInputFileFormatParser):
 
-                                instances.append(obj())
+                                for ext in obj.FILE_EXTS:
+
+                                    parsers[ext] = obj()
 
                         except TypeError:
 
@@ -83,4 +85,4 @@ def get_parsers(parsers_path):
 
                 pass
 
-    return instances
+    return parsers

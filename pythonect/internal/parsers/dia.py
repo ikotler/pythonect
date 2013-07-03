@@ -171,3 +171,5 @@ class PythonectDiaParser(pythonect.internal.parsers.PythonectInputFileFormatPars
         graph = _DiaParser().parse(source)
 
         return graph
+
+    FILE_EXTS = ['dia']

@@ -698,7 +698,7 @@ def parse(source):
 
     graph = networkx.DiGraph()
 
-    for parser in parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(parsers.__file__), '..', 'parsers'))):
+    for ext, parser in parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(parsers.__file__), '..', 'parsers'))).items():
 
         tmp_graph = parser.parse(source)
 

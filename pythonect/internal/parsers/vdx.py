@@ -149,3 +149,5 @@ class PythonectVisioParser(pythonect.internal.parsers.PythonectInputFileFormatPa
         graph = _VisioParser().parse(source)
 
         return graph
+
+    FILE_EXTS = ['vdx']

@@ -49,6 +49,7 @@ except ImportError:
 
 
 import pythonect
+import pythonect.internal.parsers
 
 
 # Pythonect Console
@@ -212,7 +213,21 @@ def main(argv=sys.argv):
 
     if args.script:
 
-        pythonect.eval(args.script.read(), globals_, locals_)
+        content = args.script.read()
+
+        scriptname, scriptextension = os.path.splitext(args.script.name)
+
+        if scriptextension:
+
+            parsers = pythonect.internal.parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(pythonect.internal.parsers.__file__), '..', 'parsers')))
+
+            content = parsers[scriptextension[1:]].parse(content)
+
+            if content is None:
+
+                raise Exception("Unable to parse %s with %s" % (scriptname, parsers[scriptextension].__repr__()))
+
+        pythonect.eval(content, globals_, locals_)
 
         args.script.close()
 

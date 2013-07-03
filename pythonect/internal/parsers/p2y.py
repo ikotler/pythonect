@@ -359,3 +359,5 @@ class PythonectScriptParser(pythonect.internal.parsers.PythonectInputFileFormatP
             pass
 
         return graph
+
+    FILE_EXTS = ['p2y']
