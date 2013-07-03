@@ -109,9 +109,15 @@ class _VisioParser(xml.sax.handler.ContentHandler):
 
         if self._in_text:
 
-            # Strip leading and trailing '#'
+            if self.node_value.get('CONTENT', None) is None:
 
-            self.node_value.update({'CONTENT': content})
+                if isinstance(content, unicode):
+
+                    # TODO: This is a hack to replace u'\u201cHello, world\u201d to "Hello, world"
+
+                    content = content.encode('ascii', 'replace').replace('?', '"')
+
+                self.node_value.update({'CONTENT': content})
 
     def endDocument(self):
 
