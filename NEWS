@@ -1,24 +1,45 @@
+Pythonect Changelog
+===================
+
+Here you can see the full list of changes between each Pythonect release. 
+
 Ticket numbers in this file can be looked up by visiting
 http://github.com/ikotler/pythonect/issues/<number>
 
 
 HEAD
-====
+----
 
-- Make Pythonect Interpreter Test-able (i.e. interpreter is now a Python module)
+Core and builtins
+^^^^^^^^^^^^^^^^^
 
-- Add Tests for Pythonect Interpreter
+- Rewrite engine to be both a visual programming language and a text-based scripting language.
 
-- Fix #72 (Again)
+- Add support for GNOME Dia (*.DIA) as an Input File Format for Visual Programming
+
+- Add support for Microsoft Visio (*.VDX) as an Input File Format for Visual Programming
+
+- Rewrite Pythonect's Text-based scripting parser (*.P2Y) to use Python's tokenize instead of PLY
+
+- Modify Pythonect's parse() to return a directed graph (i.e. NetworkX.DiGraph)
+
+- Add auto-generated SphinX doc (i.e. doc/)
+
+- Modify NEWS reStructuredText Format to better suit the auto-generated doc
+
+Build
+^^^^^
+
+- Modify setup.cfg to stop running tests after the first error or failure
 
 
 What's New In Pythonect 0.5?
-============================
+----------------------------
 
 *Release date: 24-Apr-2013*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Issue #71: Unable to run Pythonect in Script Mode
 
@@ -32,12 +53,12 @@ Core and builtins
 
 
 What's New In Pythonect 0.4.2?
-==============================
+------------------------------
 
 *Release date: 16-Feb-2013*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Feature #61: Interpreter supports command line '-c', '-i' and '-m'
 
@@ -66,7 +87,7 @@ Core and builtins
 - Issue #69: print/print_ can not be overridden by locals or globals value
 
 Build
------
+^^^^^
 
 - Switched to nosetests (+ coverage)
 
@@ -74,12 +95,12 @@ Build
 
 
 What's New In Pythonect 0.4.1?
-==============================
+------------------------------
 
 *Release date: 03-Sep-2012*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - PEP8 Fixes
 
@@ -100,7 +121,7 @@ Core and builtins
 - Issue #47: Pythonect parse() is not included in the testsuite
 
 Build
------
+^^^^^
 
 - Issue #43: Pythonect unittest runner is not cross-platform
 
@@ -108,12 +129,12 @@ Build
 
 
 What's New In Pythonect 0.4?
-============================
+----------------------------
 
 *Release date: 09-Aug-2012*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Issue #31: Synchronous/Asynchronous is not enforced when execution return value is callable and iterable
 
@@ -128,7 +149,7 @@ Core and builtins
 - Feature #36: Backticks can be used to evaluate a Pythonect expression
 
 Miscellaneous
--------------
+^^^^^^^^^^^^^
 
 - Removed eXecute bit from pythonect/__init__.py and pythonect/internal/__init__.py
 
@@ -136,12 +157,12 @@ Miscellaneous
 
 
 What's New In Pythonect 0.3.1?
-==============================
+------------------------------
 
 *Release date: 14-Jul-2012*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Issue #25: Pythonect package namespsace (when importing from Python) is polluted
 
@@ -157,12 +178,12 @@ Core and builtins
 
 
 What's New in Pythonect 0.3?
-============================
+----------------------------
 
 *Release date: 20-Jun-2012*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Feature #13: Improved print function
 
@@ -185,18 +206,18 @@ Core and builtins
 - Issue #21: Preprocessor breaks on a List with a String that contains comma
 
 Build
------
+^^^^^
 
 - Issue #12: No newline at the end of _version.py (PEP8)
 
 
 What's New in Pythonect 0.2.1?
-==============================
+------------------------------
 
 *Release date: 27-May-2012*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Issue #9: Autoload won't load modules from current working directory
 
@@ -204,12 +225,12 @@ Core and builtins
 
 
 What's New in Pythonect 0.2?
-============================
+----------------------------
 
 *Release date: 30-Apr-2012*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Feature #8: Implemented Autoloading.
 
@@ -220,34 +241,34 @@ Core and builtins
 - Issue #5: Interpreter lags when pressing Enter key multiple times
 
 Build
------
+^^^^^
 
 - Issue #4: Pythonect reports incorrect version if installed via pip/sdist.
 
 
 What's New in Pythonect 0.1.1?
-==============================
+------------------------------
 
 *Release date: 18-Apr-2012*
 
 Core and builtins
------------------
+^^^^^^^^^^^^^^^^^
 
 - Issue #3: Check that the program return value is not None before printing it  
 
 Build
------
+^^^^^
 
 - Issue #1: Removed import from __init__ to avoid PLY imports via setup.py.
 
 Miscellaneous
--------------
+^^^^^^^^^^^^^
 
 - Add NEWS file
 
 
 What's New in Pythonect 0.1?
-============================
+----------------------------
 
 *Release date: 01-Apr-2012*
 
