@@ -81,6 +81,8 @@ def _make_graph(code, node_prefix='', depth=0, in_brackets=False):
 
     for toknum, tokval, (srow, scol), (erow, ecol), line in tokens:
 
+        extra_string = ''
+
         # print "[Row %d, Col %d]: Received (#%d) %s" % (srow, scol, toknum, tokval)
 
         # Skip over INDENT/NL
@@ -99,7 +101,11 @@ def _make_graph(code, node_prefix='', depth=0, in_brackets=False):
 
             continue
 
-        node_value = node_value + tokval
+        if not in_url and ((toknum == tokenize.NAME and tokval != '_') or tokval == ':'):
+
+            extra_string = ' '
+
+        node_value = node_value + tokval + extra_string
 
         # Within '(....)' or '{...}' ?
 
@@ -128,20 +134,6 @@ def _make_graph(code, node_prefix='', depth=0, in_brackets=False):
         # Not Within '@xmlrpc://...' ...
 
         if not in_url:
-
-            # Space on Demand (Python Keywords / Syntax)
-
-            if tokval in [':', ';'] or node_value[-3:] in ['def', 'for'] or node_value[-6:] in ['import', 'return'] or node_value[-5:] == 'yield':
-
-                # i.e. 'deffoobar():returnx+1' to 'def foobar(): return x+1'
-
-                node_value = node_value + ' '
-
-            if node_value[-2:] == 'is':
-
-                # i.e '2is2' to '2 is 2'
-
-                node_value = node_value.replace('is', ' is ')
 
             # Start of Python Statement Scope?
 

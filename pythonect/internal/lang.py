@@ -91,7 +91,7 @@ class remotefunction(object):
 
     def __init__(self, name, host, *args, **kwargs):
 
-        self.__name = name
+        self.__name = name.strip()
 
         self.__host = host
 
