@@ -37,6 +37,7 @@ import os
 import atexit
 import runpy
 import multiprocessing
+import pprint
 
 
 try:
@@ -177,15 +178,21 @@ def main(argv=sys.argv):
 
     # Setup logging level
 
-    logging.basicConfig(level=verbose_levels[args.verbose % 4], format="%(filename)10s:%(lineno)4d:%(message)s")
+    logging.basicConfig(level=verbose_levels[args.verbose % 4], format="%(levelname)s:%(message)s")
+
+    logging.info('Interpreter Command line arguments:\n%s' % pprint.pformat(vars(args)))
 
     # Add current working directory to sys.path
 
     sys.path.insert(0, os.getcwd())
 
+    logging.info('Interpreter Initial sys.argv = %s' % sys.argv)
+
     # Adjust sys.argv, make sys.argv[1] as sys.argv[0], sys.argv[2] as sys.argv[1] and etc.
 
     if argv == sys.argv:
+
+        logging.debug('Adjusting sys.argv due to (argv) %s == (sys.argv) %s' % (argv, sys.argv))
 
         argv = sys.argv[1:]
 
@@ -193,9 +200,13 @@ def main(argv=sys.argv):
 
             argv = ['']
 
+    logging.info('Interpreter Final sys.argv = %s' % sys.argv)
+
     # Module as script mode (i.e. python -m 'os')
 
     if args.module:
+
+        logging.info('*** Entering Module Mode ***')
 
         locals_ = runpy.run_module(args.module)
 
@@ -207,25 +218,41 @@ def main(argv=sys.argv):
 
     if args.command:
 
+        logging.info('*** Entering Command Mode ***')
+
         pythonect.eval(args.command[0], globals_, locals_)
 
     # Script-mode (i.e. ./pythonect script or #!/usr/bin/env pythonect)
 
     if args.script:
 
+        logging.info('*** Entering Script Mode ***')
+
         content = args.script.read()
 
         scriptname, scriptextension = os.path.splitext(args.script.name)
 
+        logging.info('Script Filename = %s' % scriptname)
+
         if scriptextension:
+
+            logging.info('Script Filename Extension = %s' % scriptextension)
 
             parsers = pythonect.internal.parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(pythonect.internal.parsers.__file__), '..', 'parsers')))
 
+            logging.debug('Compiling a List of Parsers:\n%s' % pprint.pformat(parsers))
+
             content = parsers[scriptextension[1:]].parse(content)
+
+            logging.info('Using Parser %s to Parse `%s`' % (parsers[scriptextension[1:]], args.script.name))
 
             if content is None:
 
                 raise Exception("Unable to parse %s with %s" % (scriptname, parsers[scriptextension].__repr__()))
+
+        else:
+
+            logging.warning("Couldn't find %s Filename Extension! Guesstimating Parser..." % args.script.name)
 
         pythonect.eval(content, globals_, locals_)
 
@@ -242,6 +269,8 @@ def main(argv=sys.argv):
     # Interactive-mode (i.e. ./pythonect)
 
     if args.interactive:
+
+        logging.info('*** Entering Interactive Mode! ***\n\n')
 
         # Pythonect's Banner (for -V, --version purposes)
 
