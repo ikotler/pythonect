@@ -188,17 +188,11 @@ def main(argv=sys.argv):
 
     logging.info('Interpreter Initial sys.argv = %s' % sys.argv)
 
-    # Adjust sys.argv, make sys.argv[1] as sys.argv[0], sys.argv[2] as sys.argv[1] and etc.
+    # Argument Passing
 
-    if argv == sys.argv:
+    if args.arg:
 
-        logging.debug('Adjusting sys.argv due to (argv) %s == (sys.argv) %s' % (argv, sys.argv))
-
-        argv = sys.argv[1:]
-
-        if not sys.argv:
-
-            argv = ['']
+        sys.argv = [sys.argv[0]] + args.arg
 
     logging.info('Interpreter Final sys.argv = %s' % sys.argv)
 
