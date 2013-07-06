@@ -51,6 +51,18 @@ class TestPythonectScriptParser(unittest.TestCase):
 
         self.assertEqual(len(pythonect.internal.parsers.p2y.PythonectScriptParser().parse('1').nodes()) == len(g.nodes()), True)
 
+    def test_shebang_line_with_even_expr_atom_op_expr(self):
+
+        g = networkx.DiGraph()
+
+        g.add_node('1')
+
+        g.add_node('2')
+
+        g.add_edge('1', '2')
+
+        self.assertEqual(len(pythonect.internal.parsers.p2y.PythonectScriptParser().parse('#! /usr/bin/env pythonect\n1 -> 1').edges()) == len(g.edges()), True)
+
     def test_even_expr_atom_op_expr(self):
 
         g = networkx.DiGraph()

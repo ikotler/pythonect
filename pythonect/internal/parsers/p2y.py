@@ -29,6 +29,7 @@
 import networkx
 import tokenize
 import StringIO
+import re
 
 
 # Local imports
@@ -344,7 +345,7 @@ class PythonectScriptParser(pythonect.internal.parsers.PythonectInputFileFormatP
 
         try:
 
-            (ignored_ret, graph) = _make_graph(source.strip())
+            (ignored_ret, graph) = _make_graph(re.sub('#!.*', '', source.strip()))
 
         except tokenize.TokenError:
 
