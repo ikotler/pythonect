@@ -292,7 +292,7 @@ def __pythonect_preprocessor(current_value):
 
     if current_value.endswith('&'):
 
-        current_value = current_value[:-1]
+        current_value = current_value[:-1].strip()
 
         flags['spawn_as_process'] = True
 
