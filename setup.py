@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
         long_description=open('README.rst').read(),
         scripts=['bin/pythonect'],
-        data_files=[('LICENSE')],
+        data_files=[('', ['LICENSE'])],
         packages=setuptools.find_packages(),
 
         classifiers=[
