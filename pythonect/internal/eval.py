@@ -39,6 +39,7 @@ import multiprocessing.pool
 import pickle
 import networkx
 import re
+import pprint
 
 
 # Local imports
@@ -344,6 +345,8 @@ def __pythonect_preprocessor(current_value):
 
 def __node_main(current_value, last_value, globals_, locals_):
 
+    logging.info('In __node_main, current_value = %s, last_value = %s' % (current_value, last_value))
+
     return_value = None
 
     try:
@@ -595,7 +598,11 @@ def _run(graph, node, globals_, locals_, flags, pool=None, is_virtual_node=False
 
             try:
 
+                logging.debug('Before __pythonect_preprocessor, value = %s' % current_value)
+
                 input_value, code_flags = __pythonect_preprocessor(current_value)
+
+                logging.debug('After __pythonect_preprocessor, value = %s' % input_value)
 
             except:
 
@@ -700,13 +707,19 @@ def parse(source):
 
     for ext, parser in parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(parsers.__file__), '..', 'parsers'))).items():
 
+        logging.debug('Trying to parse with %s' % parser)
+
         tmp_graph = parser.parse(source)
 
         if tmp_graph is not None:
 
+            logging.debug('Parsed successfully with %s, total nodes = %d' % (parser, len(tmp_graph.nodes())))
+
             if len(tmp_graph.nodes()) > len(graph.nodes()):
 
                 graph = tmp_graph
+
+    logging.info('Parsed graph contains %d nodes' % len(graph.nodes()))
 
     return graph
 
@@ -755,13 +768,21 @@ def eval(source, globals_={}, locals_={}):
 
         root_nodes = sorted([node for node, degree in graph.in_degree().items() if degree == 0])
 
+        logging.info('There are %d root node(s)' % len(root_nodes))
+
+        logging.debug('Root node(s) are: %s' % root_nodes)
+
         # Extend Python's __builtin__ with Pythonect's `lang`
 
         start_globals_ = __extend_builtins(globals_)
 
+        logging.debug('Initial globals_:\n%s' % pprint.pformat(start_globals_))
+
         # Default input
 
         start_globals_['_'] = start_globals_.get('_', locals_.get('_', None))
+
+        logging.info('_ equal %s', start_globals_['_'])
 
         # Execute Pythonect program
 
