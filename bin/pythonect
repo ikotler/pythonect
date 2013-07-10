@@ -28,7 +28,17 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-import readline
+
+try:
+
+    import readline
+
+except ImportError:
+    
+    # Windows ...
+
+    pass
+
 import code
 import codeop
 import argparse
@@ -94,7 +104,7 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
             readline.read_history_file(histfile)
 
-        except IOError:
+        except Exception:
 
             pass
 
@@ -102,7 +112,15 @@ class PythonectInteractiveConsole(code.InteractiveConsole):
 
     def save_history(self, histfile):
 
-        readline.write_history_file(histfile)
+        try:
+
+            readline.write_history_file(histfile)
+
+        # i.e. NameError: name 'readline' is not defined ...
+
+        except NameError:
+
+            pass
 
     # This is a cut & paste from /usr/lib/python2.7/code.py
     # Except we're not calling `exec` statement
