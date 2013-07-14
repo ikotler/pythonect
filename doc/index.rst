@@ -11,9 +11,7 @@ of Pythonect, check out the :ref:`api` documentation.
 Pythonect is dependent on one external library: the `NetworkX
 <http://networkx.github.io/>`_ graph library. This library is not documented
 here. If you want to dive into its documentation, check out the following
-link:
-
-- `NetworkX Documentation <http://networkx.github.io/documentation/latest/>`_
+link: `NetworkX Documentation <http://networkx.github.io/documentation/latest/>`_
 
 .. note::
    This is the main documentation for the Pythonect project. The contents of
