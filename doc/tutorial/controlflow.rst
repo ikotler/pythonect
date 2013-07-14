@@ -21,8 +21,8 @@ determine whether to terminate or continue the flow.
 :const:`True` as Pass-through
 -----------------------------
 
-Whenever a Python expression or function returns :const:`True`. The current
-value in the flow is pushed to the next operation. For example:  
+Whenever a Python expression or function returns :const:`True` the current
+value in the flow is pushed to the next operation. For example:   
 ::
 
     1 -> [_ < 2] -> print
@@ -42,8 +42,8 @@ Will print ``"Hello, world"`` because ``startswith`` method returned :const:`Tru
 :const:`False` as Terminator
 ----------------------------
 
-Whenever a Python expression or function returns :const:`False`. The current
-flow terminates and returns False. For example:
+Whenever a Python expression or function returns :const:`False` the current
+flow terminates and returns False. For example: 
 ::
 
     "Hello, world" -> _.startswith('ello') -> print

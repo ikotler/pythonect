@@ -70,8 +70,8 @@ This will print, each in its own thread, and not necessarily in that order:
 :const:`1`, :const:`1`, :const:`0.34`, and :const:`"Hello world"`.
 
 
-Predefine Variables
-===================
+Predefined Variables
+====================
 
 Pythonect predefines two variables: ``_`` and ``_!``
 

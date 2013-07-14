@@ -16,7 +16,7 @@ Python. The visual programming language is based on the idea of a diagram with
 "boxes and arrows".
 
 The Pythonect interpreter (and reference implementation) is a free and open
-source software written in completely Python, and is available under the BSD
+source software written completely in Python, and is available under the BSD
 license.
 
 Why Pythonect?

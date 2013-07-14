@@ -6,8 +6,8 @@ Hello World Program
 Pythonect provides both a visual programming language and a text-based
 scripting language. 
 
-The following is an example Hello world program in both, visual
-and text-based languages. Both versions consist of the same flow.
+The following is an example Hello world program in both visual and text-based
+languages. Both versions consist of the same flow.
 
 
 .. _tut-visualexample:
@@ -16,7 +16,7 @@ Visual Programming Version
 --------------------------
 
 Pythonect supports multiple graph describing languages and diagram formats.
-For the Hello world program, I will be using `Dia
+For the Hello world example I will be using `Dia
 <https://wiki.gnome.org/Dia/>`_.
 
 :program:`Dia` is a free and open source general-purpose diagramming software.
