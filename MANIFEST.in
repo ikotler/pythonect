@@ -1,1 +1,2 @@
-include bin/pythonect README.rst LICENSE NEWS setup.cfg .coveragerc
+include bin/pythonect *.rst LICENSE NEWS setup.cfg
+global-include *.p2y *.dia *.vdx *.py
