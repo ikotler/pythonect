@@ -345,7 +345,7 @@ class PythonectScriptParser(pythonect.internal.parsers.PythonectInputFileFormatP
 
         try:
 
-            (ignored_ret, graph) = _make_graph(re.sub('#!.*', '', source.strip()))
+            (ignored_ret, graph) = _make_graph(re.sub('#.*', '', source.strip()))
 
         except tokenize.TokenError:
 
