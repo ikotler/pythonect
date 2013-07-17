@@ -17,7 +17,7 @@ Or:
 
 .. image:: http://pythonect.org/HelloWorld2.png
 
-See the `Pythonect documentation <http://docs.pythonect.org>` for a detailed walkthrough of the language and its features.
+See the `Pythonect documentation <http://docs.pythonect.org>`_ for a detailed walkthrough of the language and its features.
 
 Installation
 ------------
