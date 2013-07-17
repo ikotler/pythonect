@@ -2,8 +2,7 @@
 Pythonect
 =========
 
-Pythonect_ is a new, experimental, general-purpose dataflow programming language based on Python, written in Python.
-It aims to combine the intuitive feel of shell scripting (and all of its perks like implicit parallelism) with the flexibility and agility of Python.
+Pythonect_ is a new, experimental, general-purpose dataflow programming language based on Python. It provides both a visual programming language and a text-based scripting language. The text-based scripting language aims to combine the quick and intuitive feel of shell scripting, with the power of Python. The visual programming language is based on the idea of a diagram with “boxes and arrows”. Crazy? Most definitely. And yet, strangely enough, it works!
 
 .. _Pythonect: http://www.pythonect.org
 
@@ -14,7 +13,11 @@ Here is the canonical "Hello, world" example program in Pythonect::
 
 	"Hello, world" -> print
 
-See the `Pythonect Tutorial: Learn By Example <https://github.com/ikotler/pythonect/wiki/Pythonect-Tutorial:-Learn-By-Example>`_ for more examples and details.
+Or:
+
+.. image:: http://pythonect.org/HelloWorld2.png
+
+See the `Pythonect documentation <http://docs.pythonect.org>` for a detailed walkthrough of the language and its features.
 
 Installation
 ------------
@@ -57,4 +60,4 @@ Build Status |status|
 Licensing
 ---------
 
-Pythonect is made available under a BSD license; see ``LICENSE`` for details.
+Pythonect is available under the BSD 3-Clause License; see ``LICENSE`` for details.
