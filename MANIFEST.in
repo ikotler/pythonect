@@ -1,3 +1,13 @@
-include bin/pythonect *.rst LICENSE NEWS setup.cfg
-global-include *.p2y *.dia *.vdx *.py
-prune examples
+include LICENSE
+include NEWS 
+include README.rst
+include MANIFEST.in
+include setup.cfg
+include setup.py
+
+recursive-include doc *
+recursive-include examples *
+prune doc/_build
+
+global-include *.rst
+global-exclude *.DS_Store*
