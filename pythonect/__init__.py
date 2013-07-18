@@ -28,7 +28,6 @@
 
 """Parse and execute Pythonect code"""
 
-import sys
 
 __version__ = '0.0.0dev0'
 
@@ -42,8 +41,7 @@ except ImportError as e:
 
     __version__ = get_version()
 
-if (sys.argv[0] != 'setup.py') or (sys.argv[0] == 'setup.py' and sys.argv[1] in ['test', 'nosetests']):
 
-    # API
+# API
 
-    from internal.eval import eval, parse
+from internal.eval import eval, parse
