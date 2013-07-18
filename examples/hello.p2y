@@ -1,0 +1,9 @@
+#!/usr/bin/env pythonect
+#
+# The canonical "Hello, world" example program
+#
+# >>> 'Hello, world' -> print
+# <MainProcess:MainThread> : Hello, world
+#
+
+'Hello, world' -> print
