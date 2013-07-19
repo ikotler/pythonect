@@ -209,7 +209,7 @@ def _run_next_virtual_nodes(graph, node, globals_, locals_, flags, pool, result)
 
                 if is_head_result:
 
-                    logging.debug('is_head_result is True for %s'  % res_value)
+                    logging.debug('is_head_result is True for %s' % res_value)
 
                     is_head_result = False
 

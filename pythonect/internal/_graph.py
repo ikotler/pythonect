@@ -54,7 +54,7 @@ class Graph(networkx.DiGraph):
 
         # attempt to load graph with data
         if data is not None:
-            networkx.convert.to_networkx_graph(data,create_using=self)
+            networkx.convert.to_networkx_graph(data, create_using=self)
         # load graph attributes (must be after convert)
         self.graph.update(attr)
-        self.edge=self.adj
+        self.edge = self.adj
