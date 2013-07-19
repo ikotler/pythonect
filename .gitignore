@@ -8,3 +8,4 @@ _version*
 .noseids
 .DS_Store
 doc/_build
+bin/pythonectc
