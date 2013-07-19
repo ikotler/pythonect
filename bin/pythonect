@@ -34,7 +34,7 @@ try:
     import readline
 
 except ImportError:
-    
+
     # Windows ...
 
     pass
@@ -260,7 +260,7 @@ def main(argv=sys.argv):
 
             if content is None:
 
-                raise Exception("Unable to parse %s with %s" % (scriptname, parsers[scriptextension].__repr__()))
+                raise Exception("Unable to parse %s with %s" % (scriptname, parsers[scriptextension[1:]].__repr__()))
 
         else:
 
