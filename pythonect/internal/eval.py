@@ -724,7 +724,7 @@ def parse(source):
 
     for ext, parser in parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(parsers.__file__), '..', 'parsers'))).items():
 
-        logging.debug('Trying to parse with %s' % parser)
+        logging.debug('Trying to parse %s with %s' % (source, parser))
 
         tmp_graph = parser.parse(source)
 
@@ -763,6 +763,8 @@ def eval(source, globals_={}, locals_={}):
 
     if source != "pass":
 
+        logging.info('Program is meaningful')
+
         return_value = []
 
         return_values = []
@@ -775,11 +777,17 @@ def eval(source, globals_={}, locals_={}):
 
         reduces = {}
 
-        if not isinstance(source, (networkx.DiGraph, _graph.Graph)):
+        logging.debug('Evaluating %s with globals_ = %s and locals_ %s' % (source, globals_, locals_))
+
+        if not isinstance(source, networkx.DiGraph):
+
+            logging.info('Parsing program...')
 
             graph = parse(source)
 
         else:
+
+            logging.info('Program is already parsed! Using source AS IS')
 
             graph = source
 
