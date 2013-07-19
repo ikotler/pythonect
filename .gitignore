@@ -7,3 +7,4 @@ _version*
 .coverage
 .noseids
 .DS_Store
+doc/_build
