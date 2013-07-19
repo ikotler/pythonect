@@ -35,7 +35,7 @@ import re
 # Local imports
 
 import pythonect.internal.parsers
-import pythonect.internal.graph
+import pythonect.internal._graph
 
 
 def _create_and_link(graph, new_node_name, new_node_kwargs):
