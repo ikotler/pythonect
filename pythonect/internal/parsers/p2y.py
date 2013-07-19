@@ -35,6 +35,7 @@ import re
 # Local imports
 
 import pythonect.internal.parsers
+import pythonect.internal.graph
 
 
 def _create_and_link(graph, new_node_name, new_node_kwargs):
@@ -66,7 +67,7 @@ def _make_graph(code, node_prefix='', depth=0, in_brackets=False):
 
     in_literal_scope = 0
 
-    graph = networkx.DiGraph()
+    graph = pythonect.internal._graph.Graph()
 
     tokens = tokenize.generate_tokens(StringIO.StringIO(code).readline)
 
@@ -312,7 +313,7 @@ def _make_graph(code, node_prefix='', depth=0, in_brackets=False):
 
             # New graph
 
-            graph = networkx.DiGraph()
+            graph = pythonect.internal._graph.Graph()
 
         previous_tokval = tokval
 

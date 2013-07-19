@@ -35,6 +35,7 @@ import StringIO
 # Local imports
 
 import pythonect.internal.parsers
+import pythonect.internal._graph
 
 
 # Tested on dia-bin 0.97.2
@@ -79,7 +80,7 @@ class _DiaParser(xml.sax.handler.ContentHandler):
 
                 if self._graph is None:
 
-                    self._graph = networkx.DiGraph()
+                    self._graph = pythonect.internal._graph.Graph()
 
                 self._in_dia_object = True
 
@@ -119,7 +120,7 @@ class _DiaParser(xml.sax.handler.ContentHandler):
 
         if self._graph is None:
 
-            self._graph = networkx.DiGraph()
+            self._graph = pythonect.internal._graph.Graph()
 
     def parse(self, source):
 

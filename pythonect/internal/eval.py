@@ -46,6 +46,7 @@ import pprint
 
 import parsers
 import lang
+import _graph
 
 
 # Consts
@@ -719,7 +720,7 @@ def parse(source):
         SyntaxError: An error occurred parsing the code.
     """
 
-    graph = networkx.DiGraph()
+    graph = _graph.Graph()
 
     for ext, parser in parsers.get_parsers(os.path.abspath(os.path.join(os.path.dirname(parsers.__file__), '..', 'parsers'))).items():
 
@@ -774,7 +775,7 @@ def eval(source, globals_={}, locals_={}):
 
         reduces = {}
 
-        if not isinstance(source, networkx.DiGraph):
+        if not isinstance(source, (networkx.DiGraph, _graph.Graph)):
 
             graph = parse(source)
 
@@ -783,6 +784,16 @@ def eval(source, globals_={}, locals_={}):
             graph = source
 
         root_nodes = sorted([node for node, degree in graph.in_degree().items() if degree == 0])
+
+        if not root_nodes:
+
+            cycles = networkx.simple_cycles(graph)
+
+            if cycles:
+
+                logging.info('Found cycles: %s in graph, using nodes() 1st node (i.e. %s) as root node' % (cycles, graph.nodes()[0]))
+
+                root_nodes = [graph.nodes()[0]]
 
         logging.info('There are %d root node(s)' % len(root_nodes))
 
