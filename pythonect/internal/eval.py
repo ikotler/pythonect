@@ -186,7 +186,17 @@ def _run_next_virtual_nodes(graph, node, globals_, locals_, flags, pool, result)
 
         if not_safe_to_iter:
 
+            logging.debug('not_safe_to_iter is True for %s' % result)
+
             head_result = result
+
+            tmp_globals = copy.copy(globals_)
+
+            tmp_locals = copy.copy(locals_)
+
+            tmp_globals['_'] = tmp_locals['_'] = head_result
+
+            return_value = __resolve_and_merge_results(_run(graph, node, tmp_globals, tmp_locals, {}, None, True))
 
         else:
 
@@ -194,11 +204,23 @@ def _run_next_virtual_nodes(graph, node, globals_, locals_, flags, pool, result)
 
             for res_value in result:
 
+                logging.debug('Now at %s from %s' % (res_value, result))
+
                 if is_head_result:
+
+                    logging.debug('is_head_result is True for %s'  % res_value)
 
                     is_head_result = False
 
                     head_result = res_value
+
+                    tmp_globals = copy.copy(globals_)
+
+                    tmp_locals = copy.copy(locals_)
+
+                    tmp_globals['_'] = tmp_locals['_'] = head_result
+
+                    return_value.insert(0, _run(graph, node, tmp_globals, tmp_locals, {}, None, True))
 
                     continue
 
@@ -220,21 +242,15 @@ def _run_next_virtual_nodes(graph, node, globals_, locals_, flags, pool, result)
 
                     return_value.append(pool.apply_async(_run, args=(graph, node, tmp_globals, tmp_locals, {}, None, True)))
 
-        tmp_globals = copy.copy(globals_)
+            pool.close()
 
-        tmp_locals = copy.copy(locals_)
+            pool.join()
 
-        tmp_globals['_'] = tmp_locals['_'] = head_result
+            pool.terminate()
 
-        return_value.insert(0, _run(graph, node, tmp_globals, tmp_locals, {}, None, True))
+            logging.debug('return_value = %s' % return_value)
 
-        pool.close()
-
-        pool.join()
-
-        pool.terminate()
-
-        return_value = __resolve_and_merge_results(return_value)
+            return_value = __resolve_and_merge_results(return_value)
 
     # Loopback
 
