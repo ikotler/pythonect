@@ -136,21 +136,27 @@ def __resolve_and_merge_results(results_list):
 
     resolved = []
 
-    for element in results_list:
+    try:
 
-        if isinstance(element, multiprocessing.pool.ApplyResult):
+        for element in results_list:
 
-            element = element.get()
+            if isinstance(element, multiprocessing.pool.ApplyResult):
 
-        if isinstance(element, list):
+                element = element.get()
 
-            for sub_element in element:
+            if isinstance(element, list):
 
-                resolved.append(sub_element)
+                for sub_element in element:
 
-        else:
+                    resolved.append(sub_element)
 
-            resolved.append(element)
+            else:
+
+                resolved.append(element)
+
+    except TypeError:
+
+        resolved = results_list
 
     return resolved
 
