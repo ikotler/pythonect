@@ -1,34 +1,39 @@
-.. _license:
-
 License
 =======
 
-Pythonect licensed under BSD 3-Clause::
+Pythonect is licensed under a three clause BSD License.  It basically means:
+do whatever you want with it as long as the copyright in Pythonect sticks
+around, the conditions are not modified and the disclaimer is present.
+Furthermore you must not use the names of the authors to promote derivatives
+of the software without written consent.
 
-    Copyright (c) 2012-2013, Itzik Kotler
-    All rights reserved.
+The full license text can be found below (:ref:`pythonect-license`).  For the
+documentation and artwork different licenses apply.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+.. _authors:
 
-        * Redistributions of source code must retain the above copyright
-          notice, this list of conditions and the following disclaimer.
+Authors
+-------
 
-        * Redistributions in binary form must reproduce the above copyright
-          notice, this list of conditions and the following disclaimer in the
-          documentation and/or other materials provided with the distribution.
+.. include:: ../AUTHORS
 
-        * Neither the name of the author nor the names of its contributors may
-          be used to endorse or promote products derived from this software without
-          specific prior written permission.
+General License Definitions
+---------------------------
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY
-    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+The following section contains the full license texts for Pythonect and the
+documentation.
+
+-   "AUTHORS" hereby refers to all the authors listed in the
+    :ref:`authors` section.
+
+-   The ":ref:`pythonect-license`" applies to all the sourcecode shipped as
+    part of Pythonect (Pythonect itself as well as the examples and the unittests)
+    as well as documentation.
+
+
+.. _pythonect-license:
+
+Pythonect License
+-----------------
+
+.. include:: ../LICENSE

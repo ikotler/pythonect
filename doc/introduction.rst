@@ -1,9 +1,12 @@
-Foreword
-========
+.. _introduction:
+
+Introduction
+============
 
 Read this before you get started with Pythonect. This hopefully answers some
 questions about the purpose and goals of the project, and when you should or
 should not be using it.
+
 
 What is Pythonect?
 ------------------
@@ -17,7 +20,8 @@ Python. The visual programming language is based on the idea of a diagram with
 
 The Pythonect interpreter (and reference implementation) is a free and open
 source software written completely in Python, and is available under the BSD
-license.
+3-Clause license.
+
 
 Why Pythonect?
 --------------
