@@ -3,13 +3,13 @@ Pythonect |status|
 
 .. |status| image:: https://secure.travis-ci.org/ikotler/pythonect.png
 
-`Pythonect <http://www.pythonect.org>_ is a new, experimental, general-purpose
-`dataflow programming language based on Python. It provides both a visual
-`programming language and a text-based scripting language. The text-based
-`scripting language aims to combine the quick and intuitive feel of shell
-`scripting, with the power of Python. The visual programming language is based
-`on the idea of a diagram with “boxes and arrows”. Crazy? Most definitely. And
-`yet, strangely enough, it works!
+`Pythonect <http://www.pythonect.org>`_ is a new, experimental, general-
+purpose dataflow programming language based on Python. It provides both a
+visual programming language and a text-based scripting language. The text-
+based scripting language aims to combine the quick and intuitive feel of shell
+scripting, with the power of Python. The visual programming language is based
+on the idea of a diagram with “boxes and arrows”. Crazy? Most definitely. And
+yet, strangely enough, it works!
 
 
 Hello, world
@@ -32,8 +32,7 @@ Installation
 
 There are a few ways to install Pythonect.
 
-1. You can install directly from PyPI_ using `setuptools/easy_install
-<http://pypi.python.org/pypi/setuptools>`_ or pip_::
+1. You can install directly from PyPI_ using `setuptools/easy_install <http://pypi.python.org/pypi/setuptools>`_ or pip_::
 
         pip install Pythonect
 
