@@ -77,8 +77,6 @@ Anyone may view the build status and history at any time:
 
     https://travis-ci.org/ikotler/pythonect
 
-Additional reports will also be included here in the future, including :pep:`8` checks and stress reports for extremely large datasets.
-
 
 .. _docs:
 
