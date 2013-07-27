@@ -8,11 +8,6 @@ different parts. I recommend that you get started with :ref:`installation` and
 then head over to the :ref:`tutorial`. If you'd rather dive into the internals
 of Pythonect, check out the :ref:`api` documentation.
 
-Pythonect is dependent on one external library: the `NetworkX
-<http://networkx.github.io/>`_ graph library. This library is not documented
-here. If you want to dive into its documentation, check out the following
-link: `NetworkX Documentation <http://networkx.github.io/documentation/latest/>`_
-
 .. note::
    This is the main documentation for the Pythonect project. The contents of
    this site are automatically generated via `Sphinx <http://sphinx-
@@ -22,6 +17,7 @@ link: `NetworkX Documentation <http://networkx.github.io/documentation/latest/>`
    repository. If you find an error in the documentation, please report it in
    the bug tracker `here <https://www.github.com/ikotler/pythonect/issues>`__,
    or even better, submit a pull request!
+
 
 User's Guide
 ------------
@@ -33,9 +29,10 @@ instructions for building applications with Pythonect.
 .. toctree::
    :maxdepth: 2
 
-   foreword
+   introduction
    installation
    tutorial/index
+   development
 
 .. _api:
 
@@ -49,6 +46,7 @@ this part of the documentation is for you.
    :maxdepth: 2
 
    api
+
 
 Additional Notes
 ----------------
