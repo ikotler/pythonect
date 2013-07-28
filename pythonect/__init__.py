@@ -28,18 +28,7 @@
 
 """Parse and execute Pythonect code"""
 
-
-__version__ = '0.0.0dev0'
-
-try:
-
-    from _version import __version__
-
-except ImportError as e:
-
-    from internal.version import get_version
-
-    __version__ = get_version()
+from _version import __version__
 
 
 # API
