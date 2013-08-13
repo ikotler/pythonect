@@ -1,15 +1,27 @@
-Pythonect |status|
-==================
+Pythonect
+=========
 
-.. |status| image:: https://secure.travis-ci.org/ikotler/pythonect.png
+.. image:: https://badge.fury.io/py/Pythonect.png
+    :target: http://badge.fury.io/py/Pythonect
+    :alt: Latest version
 
-`Pythonect <http://www.pythonect.org>`_ is a new, experimental, general-
-purpose dataflow programming language based on Python. It provides both a
-visual programming language and a text-based scripting language. The text-
-based scripting language aims to combine the quick and intuitive feel of shell
-scripting, with the power of Python. The visual programming language is based
-on the idea of a diagram with “boxes and arrows”. Crazy? Most definitely. And
-yet, strangely enough, it works!
+.. image:: https://travis-ci.org/ikotler/pythonect.png?branch=master
+    :target: https://travis-ci.org/ikotler/pythonect
+    :alt: Travis-CI
+
+.. image:: https://pypip.in/d/Pythonect/badge.png
+    :target: https://crate.io/packages/Pythonect/
+    :alt: Number of PyPI downloads
+
+Homepage: `http://www.pythonect.org/ <http://www.pythonect.org/>`_
+
+`Pythonect` is a new, experimental, general-purpose dataflow programming
+language based on Python. It provides both a visual programming language and a
+text-based scripting language. The text-based scripting language aims to
+combine the quick and intuitive feel of shell scripting, with the power of
+Python. The visual programming language is based on the idea of a diagram with
+“boxes and arrows”. Crazy? Most definitely. And yet, strangely enough, it
+works!
 
 
 Hello, world
@@ -22,9 +34,6 @@ Here is the canonical "Hello, world" example program in Pythonect::
 Or:
 
 .. image:: http://pythonect.org/HelloWorld2.png
-
-See the `Pythonect documentation <http://docs.pythonect.org>`_ for a detailed
-walkthrough of the language and its features.
 
 
 Installation
@@ -63,12 +72,24 @@ you will have to do this with *root* permissions (e.g. using ``su`` or
 .. _pip: http://www.pip-installer.org/
 
 
+Examples
+--------
+
+See more examples at the `Pythonect Tutorial <http://docs.pythonect.org/en/latest/tutorial/index.html>`_.
+
+
+Documentation
+-------------
+
+Full documentation is available at http://docs.pythonect.org/.
+
+
 Please Help Out
 ---------------
 
 This project is still under development. Feedback and suggestions are very
 welcome and I encourage you to use the `Issues list
-<http://github.com/ikotler/pythonect/issues>`_ on Github to provide that
+<http://github.com/ikotler/pythonect/issues>`_ on GitHub to provide that
 feedback.
 
 Feel free to fork this repo and to commit your additions. For a list of all
@@ -87,7 +108,7 @@ Pythonect is published under the liberal terms of the BSD 3-Clause License,
 see the `LICENSE <https://github.com/ikotler/pythonect/blob/master/LICENSE>`_
 file. Although the BSD License does not require you to share any modifications
 you make to the source code, you are very much encouraged and invited to
-contribute back your modifications to the community, preferably in a Github
+contribute back your modifications to the community, preferably in a GitHub
 fork, of course.
 
 
@@ -100,7 +121,7 @@ consider Flattr'ing or Gittip'ing me:
 
 |FlattrThis|_ |GittipThis|_
 
-.. |GittipThis| image:: https://www.gittip.com/assets/7.0.8/logo.png
+.. |GittipThis| image:: https://www.gittip.com/assets/10.0.6/logo.png
 .. _GittipThis: https://www.gittip.com/ikotler
 
 .. |FlattrThis| image:: http://api.flattr.com/button/button-static-50x60.png
