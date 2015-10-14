@@ -132,6 +132,18 @@ class _VisioParser(xml.sax.handler.ContentHandler):
 
         try:
 
+            # UTF-8?
+
+            if isinstance(source, six.text_type):
+
+                try:
+
+                    source = source.encode('utf-8')
+
+                except UnicodeDecodeError:
+
+                    pass
+
             xml.sax.parseString(source, self)
 
             # Delete 'OPERATOR' from tail nodes
