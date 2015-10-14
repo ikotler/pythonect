@@ -32,8 +32,6 @@ from select import select
 import unittest
 import socket
 import threading
-import os
-import sys
 
 
 # Local imports
