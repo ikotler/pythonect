@@ -42,9 +42,10 @@ import pprint
 import six
 
 
-if six.PY2:
+try:
     import site as __sitebuiltins
-else:
+except ImportError:
+    # Python 3.4+
     import _sitebuiltins as __sitebuiltins
 
 
