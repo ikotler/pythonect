@@ -43,10 +43,10 @@ import six
 
 
 try:
-    import site as __sitebuiltins
-except ImportError:
     # Python 3.4+
     import _sitebuiltins as __sitebuiltins
+except ImportError:
+    import site as __sitebuiltins
 
 
 # Local imports
