@@ -51,7 +51,7 @@ def _safe_get_version():
 
     # Importing _version.py may raise ImportError due to missing dependencies
 
-    execfile('pythonect/_version.py', tmp_globals)
+    exec(compile(open('pythonect/_version.py').read(), 'pythonect/_version.py', 'exec'), tmp_globals)
 
     version = tmp_globals['__version__']
 
