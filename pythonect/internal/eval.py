@@ -923,7 +923,7 @@ def eval(source, globals_={}, locals_={}):
 
         if reduces:
 
-            for return_item_idx in six.range(0, len(return_value)):
+            for return_item_idx in six.moves.range(0, len(return_value)):
 
                 if isinstance(return_value[return_item_idx], _PythonectLazyRunner):
 
