@@ -28,6 +28,7 @@
 
 import networkx
 import xml.sax
+import six
 
 
 # Local imports
@@ -111,11 +112,11 @@ class _VisioParser(xml.sax.handler.ContentHandler):
 
             if self.node_value.get('CONTENT', None) is None:
 
-                if isinstance(content, unicode):
+                if isinstance(content, six.text_type):
 
                     # TODO: This is a hack to replace u'\u201cHello, world\u201d to "Hello, world"
 
-                    content = content.encode('ascii', 'replace').replace('?', '"')
+                    content = content.encode('ascii', 'replace').replace(b'?', b'"')
 
                 self.node_value.update({'CONTENT': content})
 

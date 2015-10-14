@@ -62,7 +62,7 @@ def _safe_get_version():
 
 if __name__ == "__main__":
 
-    dependencies = ['networkx>=1.7', 'nose']
+    dependencies = ['networkx>=1.7', 'six', 'nose']
 
     major, minor = sys.version_info[:2]
 

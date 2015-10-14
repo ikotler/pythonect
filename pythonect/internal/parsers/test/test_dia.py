@@ -100,7 +100,7 @@ class TestPythonectDiaParser(unittest.TestCase):
 
         g.add_edge('2', '3')
 
-        self.assertEqual(len(pythonect.internal.parsers.dia.PythonectDiaParser().parse(open(TEST_DIR + os.sep + 'dia_examples' + os.sep + 'odd_expr_atom_op_expr_gzipped.dia').read()).edges()) == len(g.edges()), True)
+        self.assertEqual(len(pythonect.internal.parsers.dia.PythonectDiaParser().parse(open(TEST_DIR + os.sep + 'dia_examples' + os.sep + 'odd_expr_atom_op_expr_gzipped.dia', 'rb').read()).edges()) == len(g.edges()), True)
 
     def test_program_expr_list(self):
 

@@ -2,8 +2,8 @@
 
 if __name__ == "__main__":
 
-    print "Goodbye, world"
+    print("Goodbye, world")
 
 else:
 
-    print "Hello, world"
+    print("Hello, world")

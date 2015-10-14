@@ -32,7 +32,7 @@ import networkx.convert
 
 # Local imports
 
-import _ordereddict
+from pythonect.internal import _ordereddict
 
 
 class Graph(networkx.DiGraph):

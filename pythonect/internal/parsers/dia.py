@@ -29,8 +29,8 @@
 import networkx
 import xml.sax
 import gzip
-import StringIO
-
+import six
+from six import BytesIO
 
 # Local imports
 
@@ -134,15 +134,17 @@ class _DiaParser(xml.sax.handler.ContentHandler):
 
                 # UTF-8?
 
-                try:
+                if isinstance(source, six.text_type):
 
-                    source = source.encode('utf-8')
+                    try:
 
-                except UnicodeDecodeError:
+                        source = source.encode('utf-8')
 
-                    pass
+                    except UnicodeDecodeError:
 
-                source = gzip.GzipFile(fileobj=StringIO.StringIO(source), mode='rb').read()
+                        pass
+
+                source = gzip.GzipFile(fileobj=BytesIO(source), mode='rb').read()
 
             except IOError:
 

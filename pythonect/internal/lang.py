@@ -28,7 +28,7 @@
 
 """This file content extends the Python's __builtins__"""
 
-import __builtin__
+from six.moves import builtins
 
 
 # Functions
@@ -41,7 +41,7 @@ def print_(object_):
 
     # START OF CRITICAL SECTION
 
-    __builtin__.__GIL__.acquire()
+    builtins.__GIL__.acquire()
 
     try:
 
@@ -61,7 +61,7 @@ def print_(object_):
 
     sys.stdout.flush()
 
-    __builtin__.__GIL__.release()
+    builtins.__GIL__.release()
 
     # END OF CRITICAL SECTION
 
@@ -82,7 +82,7 @@ class expr(object):
 
     def __call__(self, globals_, locals_):
 
-        import eval
+        from pythonect.internal import eval
 
         return eval.eval(self.__expression, globals_, locals_)
 
@@ -125,7 +125,7 @@ class remotefunction(object):
 
             self.__host = eval(self.__host, globals_, locals_)
 
-        except SyntaxError as e:
+        except SyntaxError:
 
             # CONST? As it is
 
@@ -153,11 +153,11 @@ class remotefunction(object):
 
         elif self.__host.startswith('xmlrpc://'):
 
-            import xmlrpclib
+            from six.moves import xmlrpc_client
 
             # xmlrpc:// = http://, xmlrpcs:// = https://
 
-            remote_srv = xmlrpclib.ServerProxy(self.__host.replace('xmlrpc', 'http', 1))
+            remote_srv = xmlrpc_client.ServerProxy(self.__host.replace('xmlrpc', 'http', 1))
 
             self.__remote_fcn = getattr(remote_srv, self.__name)
 

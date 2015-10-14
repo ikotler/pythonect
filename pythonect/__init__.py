@@ -28,9 +28,9 @@
 
 """Parse and execute Pythonect code"""
 
-from _version import __version__
+from pythonect._version import __version__
 
 
 # API
 
-from internal.eval import eval, parse
+from pythonect.internal.eval import eval, parse
