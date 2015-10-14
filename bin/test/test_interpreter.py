@@ -41,7 +41,6 @@ except ImportError:
 
 import sys
 import re
-import copy
 import imp
 import shlex
 import os

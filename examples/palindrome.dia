@@ -88,7 +88,7 @@
       <dia:attribute name="text">
         <dia:composite type="text">
           <dia:attribute name="string">
-            <dia:string>#raw_input("Please enter a word or a number: ")#</dia:string>
+            <dia:string>#six.moves.input("Please enter a word or a number: ")#</dia:string>
           </dia:attribute>
           <dia:attribute name="font">
             <dia:font family="sans" style="0" name="Helvetica"/>

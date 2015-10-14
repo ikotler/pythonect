@@ -28,7 +28,8 @@
 
 import networkx
 import tokenize
-import StringIO
+from six import StringIO
+from six.moves import reduce
 import re
 
 
@@ -69,7 +70,7 @@ def _make_graph(code, node_prefix='', depth=0, in_brackets=False):
 
     graph = pythonect.internal._graph.Graph()
 
-    tokens = tokenize.generate_tokens(StringIO.StringIO(code).readline)
+    tokens = tokenize.generate_tokens(StringIO(code).readline)
 
     token_pos = -1
 
@@ -155,7 +156,7 @@ def _make_graph(code, node_prefix='', depth=0, in_brackets=False):
 
         # '->' Operator?
 
-        if tokval == '>' and previous_tokval == '-':
+        if tokval == "->" or tokval == '>' and previous_tokval == '-':
 
             meaningful_graph = True
 

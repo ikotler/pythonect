@@ -52,11 +52,14 @@ import pprint
 
 try:
 
-    import _preamble
+    import pythonect._preamble
 
 except ImportError:
 
-    sys.exc_clear()
+    try:
+        sys.exc_clear()
+    except AttributeError:
+        pass
 
 
 import pythonect

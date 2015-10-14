@@ -42,6 +42,7 @@ except ImportError:
 import os
 import sys
 import copy
+import six
 
 
 # Local imports
@@ -191,11 +192,11 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_str_async_autoload(self):
 
-        self.assertEqual(pythonect.eval('"Hello world" -> string.split', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
+        self.assertEqual(pythonect.eval('"Hello world" -> six.moves.builtins.str.split', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
 
     def test_literal_str_sync_autoload(self):
 
-        self.assertItemsEqual(pythonect.eval('"Hello world" | string.split', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
+        six.assertCountEqual(self, pythonect.eval('"Hello world" | six.moves.builtins.str.split', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
 
     def test_literal_int_async_literal_int(self):
 
@@ -207,7 +208,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_int_async_literal_array_int_float(self):
 
-        self.assertItemsEqual(pythonect.eval('1 -> [int,float]', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1.0])
+        six.assertCountEqual(self, pythonect.eval('1 -> [int,float]', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1.0])
 
     def test_literal_int_sync_literal_array_int_float(self):
 
@@ -235,7 +236,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_array_int_int_async_none(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, 2] -> None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
+        six.assertCountEqual(self, pythonect.eval('[1, 2] -> None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_array_int_int_sync_dict(self):
 
@@ -243,11 +244,11 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_array_int_int_async_dict(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, 2] -> {1: "One", 2: "Two"}', copy.copy(self.globals_), copy.copy(self.locals_)), ["One", "Two"])
+        six.assertCountEqual(self, pythonect.eval('[1, 2] -> {1: "One", 2: "Two"}', copy.copy(self.globals_), copy.copy(self.locals_)), ["One", "Two"])
 
     def test_literal_array_int_str_async_none(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, "Hello"] -> None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, "Hello"])
+        six.assertCountEqual(self, pythonect.eval('[1, "Hello"] -> None', copy.copy(self.globals_), copy.copy(self.locals_)), [1, "Hello"])
 
     def test_literal_array_int_str_sync_none(self):
 
@@ -255,7 +256,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_array_int_str_async_int(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, "Hello"] -> 1', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1])
+        six.assertCountEqual(self, pythonect.eval('[1, "Hello"] -> 1', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 1])
 
     def test_literal_array_int_str_sync_int(self):
 
@@ -275,7 +276,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_array_int_int_async_literal_array_int_int(self):
 
-        self.assertItemsEqual(pythonect.eval('[1, 2] -> [3, 4]', copy.copy(self.globals_), copy.copy(self.locals_)), [3, 3, 4, 4])
+        six.assertCountEqual(self, pythonect.eval('[1, 2] -> [3, 4]', copy.copy(self.globals_), copy.copy(self.locals_)), [3, 3, 4, 4])
 
     def test_literal_int_async_stmt_single_return_value_function_async_single_return_value_function(self):
 
@@ -295,7 +296,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_int_async_stmt_multiple_return_value_function_async_multiple_return_value_function(self):
 
-        self.assertItemsEqual(pythonect.eval('1 -> def foobar(x): return [x,x+1] -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
+        six.assertCountEqual(self, pythonect.eval('1 -> def foobar(x): return [x,x+1] -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_async_stmt_multiple_return_value_function_sync_multiple_return_value_function(self):
 
@@ -311,7 +312,7 @@ class TestPythonect(unittest.TestCase):
 
     def test_literal_int_async_stmt_generator_return_value_function_async_generator_return_value_function(self):
 
-        self.assertItemsEqual(pythonect.eval('1 -> def foobar(x): yield x; yield x+1 -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
+        six.assertCountEqual(self, pythonect.eval('1 -> def foobar(x): yield x; yield x+1 -> foobar', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2])
 
     def test_literal_int_async_stmt_generator_return_value_function_sync_generator_return_value_function(self):
 
@@ -400,13 +401,13 @@ class TestPythonect(unittest.TestCase):
 
     def test_autloader_within_array(self):
 
-        self.assertItemsEqual(pythonect.eval('"Hello world" | [string.split]', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
+        six.assertCountEqual(self, pythonect.eval('"Hello world" | [six.moves.builtins.str.split]', copy.copy(self.globals_), copy.copy(self.locals_)), ["Hello", "world"])
 
     # Bug #14
 
     def test_print_like_statement(self):
 
-        self.assertItemsEqual(pythonect.eval('range(1,10) -> print("Thread A")', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        six.assertCountEqual(self, pythonect.eval('range(1,10) -> print("Thread A")', copy.copy(self.globals_), copy.copy(self.locals_)), [1, 2, 3, 4, 5, 6, 7, 8, 9])
 
     def test_multiple_stateful_x_eq_5_statement(self):
 
@@ -414,7 +415,7 @@ class TestPythonect(unittest.TestCase):
 
         globals_ = copy.copy(self.globals_)
 
-        pythonect.eval('xrange(1, 10) -> x = _', globals_, locals_)
+        pythonect.eval('range(1, 10) -> x = _', globals_, locals_)
 
         self.assertEqual('x' not in locals_ and 'x' not in globals_, True)
 

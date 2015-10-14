@@ -26,12 +26,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import __builtin__ as python
+import six.moves.builtins as python
 import threading
 import copy
 import logging
 import importlib
-import site
 import os
 import multiprocessing
 import multiprocessing.dummy
@@ -40,13 +39,21 @@ import pickle
 import networkx
 import re
 import pprint
+import six
+
+
+try:
+    # Python 3.4+
+    import _sitebuiltins as __sitebuiltins
+except ImportError:
+    import site as __sitebuiltins
 
 
 # Local imports
 
-import parsers
-import lang
-import _graph
+from pythonect.internal import parsers
+from pythonect.internal import lang
+from pythonect.internal import _graph
 
 
 # Consts
@@ -112,7 +119,7 @@ def __pickle_safe_dict(locals_or_globals):
 
     result = dict(locals_or_globals)
 
-    for k, v in locals_or_globals.iteritems():
+    for k, v in six.iteritems(locals_or_globals):
 
         try:
 
@@ -175,7 +182,7 @@ def _run_next_virtual_nodes(graph, node, globals_, locals_, flags, pool, result)
 
     # "Hello, world" or {...}
 
-    if isinstance(result, (basestring, dict)) or not __isiter(result):
+    if isinstance(result, (six.string_types, dict)) or not __isiter(result):
 
         not_safe_to_iter = True
 
@@ -292,7 +299,8 @@ def __import_module_from_exception(exception, globals_):
     #  - OR -
     # NameError: global name 'os' is not defined
 
-    mod_name = exception.message[exception.message.index("'") + 1:exception.message.rindex("'")]
+    exception_message = str(exception)
+    mod_name = exception_message[exception_message.index("'") + 1:exception_message.rindex("'")]
 
     globals_.update({mod_name: importlib.import_module(mod_name)})
 
@@ -402,7 +410,7 @@ def __node_main(current_value, last_value, globals_, locals_):
 
             # Due to eval()?
 
-            if (e.message == 'eval() arg 1 must be a string or code object'):
+            if (str(e) == 'eval() arg 1 must be a string or code object'):
 
                 return_value = current_value
 
@@ -432,7 +440,7 @@ def __node_main(current_value, last_value, globals_, locals_):
 
             # Ignore "copyright", "credits", "license", and "help"
 
-            if isinstance(return_value, (site._Printer, site._Helper)):
+            if isinstance(return_value, (__sitebuiltins._Printer, __sitebuiltins._Helper)):
 
                 return_value = return_value()
 
@@ -444,7 +452,7 @@ def __node_main(current_value, last_value, globals_, locals_):
 
                 except TypeError as e:
 
-                    if e.args[0].find('takes no arguments') != -1:
+                    if any(x in e.args[0] for x in ('takes no arguments', 'takes 0 positional arguments')):
 
                         return_value = return_value()
 
@@ -464,7 +472,7 @@ def __node_main(current_value, last_value, globals_, locals_):
 
         try:
 
-            exec current_value in globals_, locals_
+            six.exec_(current_value, globals_, locals_)
 
         # Autoloader Try & Catch
 
@@ -474,7 +482,7 @@ def __node_main(current_value, last_value, globals_, locals_):
 
                 __import_module_from_exception(e, globals_)
 
-                exec current_value in globals_, locals_
+                six.exec_(current_value, globals_, locals_)
 
             except Exception as e1:
 
@@ -686,9 +694,9 @@ def __extend_builtins(globals_):
 
     # Fix "copyright", "credits", and "license"
 
-    setattr(globals_['__builtins__'], 'copyright', site._Printer("copyright", "Copyright (c) 2012-2013 by Itzik Kotler and others.\nAll Rights Reserved."))
-    setattr(globals_['__builtins__'], 'credits', site._Printer("credits", "See www.pythonect.org for more information."))
-    setattr(globals_['__builtins__'], 'license', site._Printer("license", "See https://github.com/ikotler/pythonect/blob/master/LICENSE", ["LICENSE"], [os.path.abspath(__file__ + "/../../../")]))
+    setattr(globals_['__builtins__'], 'copyright', __sitebuiltins._Printer("copyright", "Copyright (c) 2012-2013 by Itzik Kotler and others.\nAll Rights Reserved."))
+    setattr(globals_['__builtins__'], 'credits', __sitebuiltins._Printer("credits", "See www.pythonect.org for more information."))
+    setattr(globals_['__builtins__'], 'license', __sitebuiltins._Printer("license", "See https://github.com/ikotler/pythonect/blob/master/LICENSE", ["LICENSE"], [os.path.abspath(__file__ + "/../../../")]))
 
     # Map eval() to Pythonect's eval, and __eval__ to Python's eval
 
@@ -697,7 +705,7 @@ def __extend_builtins(globals_):
 
     # Default `iterate_literal_arrays`
 
-    if not '__ITERATE_LITERAL_ARRAYS__' in globals_:
+    if '__ITERATE_LITERAL_ARRAYS__' not in globals_:
 
         globals_['__ITERATE_LITERAL_ARRAYS__'] = True
 
@@ -915,7 +923,7 @@ def eval(source, globals_={}, locals_={}):
 
         if reduces:
 
-            for return_item_idx in xrange(0, len(return_value)):
+            for return_item_idx in six.moves.range(0, len(return_value)):
 
                 if isinstance(return_value[return_item_idx], _PythonectLazyRunner):
 

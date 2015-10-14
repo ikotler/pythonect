@@ -26,15 +26,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
+from six.moves.xmlrpc_server import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 
 from select import select
 import unittest
 import socket
 import threading
-import os
-import sys
 
 
 # Local imports
@@ -101,7 +98,7 @@ def setUpModule():
 
     server.register_function(inc_function, 'inc')
 
-    print "*** Starting XMLRPCServer on localhost:8000 with registered function \'inc\'"
+    print("*** Starting XMLRPCServer on localhost:8000 with registered function \'inc\'")
 
     # Run the server's main loop (in a thread)
 
@@ -114,7 +111,7 @@ def setUpModule():
 
 def tearDownModule():
 
-    print "*** Shutting down XMLRPCServer (localhost:8000)"
+    print("*** Shutting down XMLRPCServer (localhost:8000)")
 
     server.stop_serving()
 
