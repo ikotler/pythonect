@@ -9,10 +9,6 @@ Pythonect
     :target: https://travis-ci.org/ikotler/pythonect
     :alt: Travis-CI
 
-.. image:: https://pypip.in/d/Pythonect/badge.png
-    :target: https://crate.io/packages/Pythonect/
-    :alt: Number of PyPI downloads
-
 Homepage: `http://www.pythonect.org/ <http://www.pythonect.org/>`_
 
 `Pythonect` is a new, experimental, general-purpose dataflow programming
@@ -27,7 +23,7 @@ works!
 Hello, world
 ------------
 
-Here is the canonical "Hello, world" example program in Pythonect::
+Here is the canonical "Hello, world" example program in Pythonect:
 
 	"Hello, world" -> print
 
@@ -58,7 +54,7 @@ There are a few ways to install Pythonect.
         cd pythonect
         python setup.py install
 
-   Alternatively, if you use pip_, you can install directly from the git repository::
+   Alternatively, if you use pip_, you can install it directly from the git repository::
 
         pip install \
         	git+git://github.com/ikotler/pythonect.git@master#egg=pythonect \
@@ -119,10 +115,9 @@ The best way to show your appreciation for Pythonect remains contributing to
 the community. If you'd like to show your appreciation in another way,
 consider Flattr'ing or Gittip'ing me:
 
-|FlattrThis|_ |GittipThis|_
-
-.. |GittipThis| image:: https://www.gittip.com/assets/10.0.6/logo.png
-.. _GittipThis: https://www.gittip.com/ikotler
+|FlattrThis|_ |GratipayThis|_
 
 .. |FlattrThis| image:: http://api.flattr.com/button/button-static-50x60.png
 .. _FlattrThis: https://flattr.com/thing/1713050/ikotlerpythonect-on-GitHub
+
+.. _GratipayThis: https://www.gratipay.com/ikotler
