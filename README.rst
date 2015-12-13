@@ -115,5 +115,6 @@ The best way to show your appreciation for Pythonect remains contributing to
 the community. If you'd like to show your appreciation in another way,
 consider Flattr'ing or Gratipay'ing me:
 
-[![FlattrThis](http://api.flattr.com/button/button-static-50x60.png)](https://flattr.com/thing/1713050/ikotlerpythonect-on-GitHub)
+[![FlattrThis](http://api.flattr.com/button/button-static-50x60.png)](https://flattr.com/thing/1713050/ikotlerpythonect-on-GitHub)]
+
 [GratipayThis](https://www.gratipay.com/ikotler)
