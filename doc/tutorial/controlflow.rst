@@ -57,7 +57,7 @@ Using Multithreading as ``elif`` and ``else``
 ---------------------------------------------
 
 Since there's no ``if``, there's also no ``elif`` or ``else``, instead all
-possible flows are evaulated at once. For example: 
+possible flows are evaluated at once. For example: 
 ::
 
     "Hello, world" -> [[_.startswith('Hello') -> print "1"], [[_ != 'foobar'] -> print "2" ]]
